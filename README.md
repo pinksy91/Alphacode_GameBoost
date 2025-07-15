@@ -1,103 +1,120 @@
-![Alphacode GameBoost Banner](gameboost.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pinksy91/Alphacode_GameBoost/main/logo.png" width="180" alt="Alphacode GameBoost Logo">
+</p>
 
-[![Powered by Alphacode](https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github)](https://github.com/Alphacode)
-[![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows)](#)
-[![Version](https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<h1 align="center">Alphacode GameBoost</h1>
 
-> **Ultimate Edition v3.1.0 — Advanced Gaming Performance Suite**  
-> _The all-in-one gaming optimizer for Windows 10/11 — powered by Alphacode_
+<p align="center">
+  <strong>Ultimate Edition v3.1.0 — Advanced Gaming Performance Suite</strong><br>
+  The all-in-one gaming optimizer for Windows 10/11 — powered by Alphacode
+</p>
+
+<p align="center">
+  <a href="https://github.com/Alphacode"><img src="https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github"></a>
+  <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows">
+  <img src="https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+</p>
 
 ---
 
 ## 🚀 Cos'è Alphacode GameBoost?
 
-**Alphacode GameBoost** è la suite definitiva per spremere ogni FPS dal tuo PC Windows grazie a profili di ottimizzazione avanzati, analisi AI, backup e tweak automatici.  
-Ideale per gamer competitivi, smanettoni e chiunque voglia il massimo dal proprio hardware.
+**Alphacode GameBoost** è una suite professionale per ottimizzare al massimo le prestazioni del tuo PC Windows. Perfetto per gamer competitivi, power user e appassionati di tweaking.
+
+- ⚙️ Overclock e tweak automatizzati
+- 🧠 Analisi avanzata con motore AI
+- 💾 Backup & Restore delle configurazioni
+- 🎮 Profili personalizzabili: Conservative, Balanced, Aggressive, Extreme
 
 ---
 
 ## 🖥️ Requisiti
 
-- **Sistema operativo:** Windows 10/11 (x64)
-- **PowerShell:** v5.0 o superiore (integrato in Windows 10+)
-- **Permessi:** Avviare come Amministratore per tutte le funzioni
-- **Connessione internet:** consigliata per analisi AI dinamica
+- Windows 10 o 11 (x64)
+- PowerShell 5.0+
+- Permessi da amministratore
+- Connessione Internet per le funzioni AI (opzionale)
 
 ---
 
 ## 🎮 Funzionalità principali
 
-- Profili di ottimizzazione: Conservative, Balanced, Aggressive, Maximum Performance
-- Tuning automatico dei parametri hardware/software
-- Analisi avanzata dello stato di sistema e registro
-- Backup e ripristino delle configurazioni
-- Compatibilità AMD, Intel, NVIDIA/AMD GPU
-- Log dettagliato, suggerimenti AI-driven, GUI moderna
+- ✅ Ottimizzazioni CPU, RAM, GPU, Registro e Servizi
+- 🧠 Analisi AI con punteggio di integrità sistema
+- 🖥 GUI moderna + Log dettagliati + Modalità terminale
+- 🔁 Backup automatici e ripristino con 1 click
+- 💻 Compatibile con hardware di ultima generazione
 
 ---
 
 ## 📦 Download & Quick Start
 
-1. **Scarica gli script** (`.ps1`, `.bat`) dal [repository](https://github.com/pinksy91/Alphacode_GameBoost)
-2. Avvia `Alphacode_GameBoost.bat` come **amministratore** (tasto destro → “Esegui come amministratore”)
-3. Seleziona un profilo, ottimizza e monitora l’attività
+1. Scarica o clona il repository:
+```bash
+git clone https://github.com/pinksy91/Alphacode_GameBoost
+```
 
-> **Consiglio:** Effettua un backup automatico dal tool prima di qualsiasi ottimizzazione avanzata.
+2. Avvia `Alphacode_GameBoost.bat` come **Amministratore**
+
+3. Scegli un profilo e segui la GUI
+
+> 💡 Consigliato: effettua un backup prima di qualsiasi modifica avanzata
 
 ---
 
 ## 📸 Screenshot
 
-**Dashboard Principale**
-![Main UI](1.png)
-
-**Ottimizzazione Stato Sistema**
-![System Optimization Status](2.png)
-
-**Dettaglio Analisi AI**
-![AI Optimization Analysis](3.png)
-
-**Performance Metrics e Suggerimenti**
-![Performance Metrics](4.png)
+| Dashboard Principale | Stato Ottimizzazione |
+|----------------------|----------------------|
+| ![UI](1.png)         | ![System](2.png)     |
+| ![AI](3.png)         | ![Result](4.png)     |
 
 ---
 
 ## ❓ FAQ
 
-**Il tool è reversibile?**  
-Sì, puoi effettuare il backup della configurazione originale e ripristinarla in qualsiasi momento tramite la funzione integrata.
+**È reversibile?**
+> Sì. Il backup è automatico e puoi annullare ogni modifica.
 
-**Funziona anche su Windows 11?**  
-Assolutamente sì! Testato e ottimizzato sia per Windows 10 che 11.
+**Funziona su Windows 11?**
+> Certamente. Ottimizzato per entrambe le versioni.
 
-**Serve disattivare l’antivirus?**  
-No, ma alcuni antivirus potrebbero segnalare falsi positivi a causa dei comandi avanzati. Se accade, aggiungi il tool alle eccezioni.
+**È sicuro?**
+> Il codice è open source, documentato e privo di contenuti malevoli.
 
-**Il tool è sicuro?**  
-Tutte le ottimizzazioni sono documentate e reversibili. Codice open source e ispezionabile da chiunque.
+**Supporta hardware recente?**
+> Sì, aggiornato a **luglio 2025**, testato e compatibile con:
+> - CPU AMD Ryzen serie 7000, 8000, 9000 (inclusi modelli X3D)
+> - CPU Intel Core 12ª, 13ª, 14ª generazione e **Arrow Lake** (serie K/HX incluse)
+> - Schede video NVIDIA GeForce RTX serie 30, 40, 50 (Blackwell: 5090, 5080, 5070)
+> - Schede video AMD Radeon RX 6000, RX 7000, e **RX 9000** (9060 XT, 9070, 9070 XT)
+> - GPU AMD RDNA 4 (Navi 44, 32 CU, 64 AI Accelerator, 16 GB GDDR6)
 
-**Supporta hardware AMD/Intel/NVIDIA?**  
-Sì, supporto completo e tuning dedicato anche per le ultime generazioni di CPU e GPU.
 
-**Come si disinstalla/ripristina?**  
-Basta ripristinare il backup dal menu del tool o annullare le modifiche tramite le opzioni disponibili.
+---
+
+## 🧑‍💻 Credits
+
+Creato con passione da **Alphacode**  
+Special thanks a tutti i tester e utenti che hanno supportato il progetto ❤️
 
 ---
 
 ## 📄 Licenza
 
-[MIT](LICENSE)
+Questo progetto è distribuito con licenza **MIT**. Vedi file [LICENSE](LICENSE).
 
 ---
 
-## ❤️ Supporto & contatti
+## ⭐️ Supporta il progetto
 
-- GitHub: [Alphacode](https://github.com/Alphacode)
-
----
-
-## ⭐️ Lascia una stella se ti piace!
+Lascia una ⭐ se ti piace! Condividilo con la community 💬
 
 ---
+
+<p align="center">
+  <em>Performance reale. Ottimizzazione consapevole. Solo con Alphacode GameBoost.</em>
+</p>
+
 
