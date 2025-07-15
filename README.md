@@ -1,21 +1,3 @@
-<p align="center">
-  <img src="assets/logo.png" width="180" alt="Alphacode GameBoost Logo"/>
-</p>
-
-<h1 align="center">Alphacode GameBoost</h1>
-
-<p align="center">
-  <strong>Ultimate Edition v3.1.0 — Suite di Ottimizzazione Gaming Professionale</strong><br>
-  Ottimizzatore all-in-one per Windows 10/11 — powered by <a href="https://github.com/Alphacode" target="_blank"><strong>Alphacode</strong></a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/Alphacode"><img src="https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github"></a>
-  <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows">
-  <img src="https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
-</p>
-
 ---
 
 ## 🚀 Cos'è Alphacode GameBoost?
@@ -67,8 +49,7 @@ Alphacode_GameBoost/
 
 ### 1. Download
 
-git clone [https://github.com/pinksy91/Alphacode\_GameBoost.git](https://github.com/pinksy91/Alphacode_GameBoost.git)
-oppure scarica lo ZIP ed estrai la cartella dove preferisci
+git clone [https://github.com/pinksy91/Alphacode\_GameBoost.git](https://github.com/pinksy91/Alphacode_GameBoost.git) oppure scarica lo ZIP ed estrai la cartella dove preferisci
 
 ### 2. Avvio
 
@@ -84,18 +65,6 @@ oppure scarica lo ZIP ed estrai la cartella dove preferisci
 ---
 
 ## 📸 Screenshot
-
-Dashboard Principale          Stato Ottimizzazione
-
----
-
-\[assets/1.png]                \[assets/2.png]
-
-AI Scanner                    Result Screen
-
----
-
-\[assets/3.png]                \[assets/4.png]
 
 ---
 
@@ -177,31 +146,22 @@ Altro:
 
 ## ❓ FAQ
 
-Le modifiche sono reversibili?
-Sì, ogni operazione è preceduta da backup automatico con restore immediato.
+Le modifiche sono reversibili? Sì, ogni operazione è preceduta da backup automatico con restore immediato.
 
-L’AI serve davvero?
-Il modulo AI individua criticità, conflitti, suggerisce profili e compara performance — utile per chi cerca efficienza senza rischi.
+L’AI serve davvero? Il modulo AI individua criticità, conflitti, suggerisce profili e compara performance — utile per chi cerca efficienza senza rischi.
 
-Il tool è sicuro?
-Tutto open source, niente telemetria, niente tracking. Ispeziona ogni script liberamente.
+Il tool è sicuro? Tutto open source, niente telemetria, niente tracking. Ispeziona ogni script liberamente.
 
-Supporta hardware di ultima generazione?
-Sì, validato su Zen 5, Arrow Lake, RTX 5090, RX 9000, Battlemage.
+Supporta hardware di ultima generazione? Sì, validato su Zen 5, Arrow Lake, RTX 5090, RX 9000, Battlemage.
 
 ---
 
 ## 🛠️ Troubleshooting & Log
 
-* Execution Policy:
-  Esegui `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` da PowerShell come admin
-* Antivirus:
-  Aggiungi esclusione per la cartella del tool
-* Log:
-  `%LOCALAPPDATA%\FPSSuitePro\Logs`
-  Backup in `%LOCALAPPDATA%\FPSSuitePro\Backups`
-* Restore:
-  Sempre accessibile da GUI e CLI
+* Execution Policy: Esegui `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` da PowerShell come admin
+* Antivirus: Aggiungi esclusione per la cartella del tool
+* Log: `%LOCALAPPDATA%\FPSSuitePro\Logs` Backup in `%LOCALAPPDATA%\FPSSuitePro\Backups`
+* Restore: Sempre accessibile da GUI e CLI
 
 ---
 
@@ -227,8 +187,7 @@ Come contribuire:
 3. Testa su più sistemi
 4. Documenta e invia una pull request
 
-Bug report:
-Apri una Issue su GitHub, allega log, info sistema e passi per riprodurre.
+Bug report: Apri una Issue su GitHub, allega log, info sistema e passi per riprodurre.
 
 ---
 
@@ -251,16 +210,13 @@ Consulta [LICENSE](LICENSE) per dettagli.
 
 ---
 
-Potenza reale. Controllo totale. Ottimizzazione consapevole.
-Solo con Alphacode GameBoost.
+Potenza reale. Controllo totale. Ottimizzazione consapevole. Solo con Alphacode GameBoost.
 
 ---
 
 ⭐️ Supporta il Progetto
 
-Se il tool ti è utile lascia una ⭐ su GitHub:
-[https://github.com/pinksy91/Alphacode\_GameBoost](https://github.com/pinksy91/Alphacode_GameBoost)
-Condividi e aiutaci a migliorare con feedback!
+Se il tool ti è utile lascia una ⭐ su GitHub: [https://github.com/pinksy91/Alphacode\_GameBoost](https://github.com/pinksy91/Alphacode_GameBoost) Condividi e aiutaci a migliorare con feedback!
 
 ---
 
