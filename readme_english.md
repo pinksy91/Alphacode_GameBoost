@@ -171,7 +171,7 @@ GPU:
 
 RAM:
 
-* DDR4 & DDR5 up to 8000 MHz
+* DDR4 & DDR5 
 
 Other:
 
