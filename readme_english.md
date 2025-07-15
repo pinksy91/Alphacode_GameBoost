@@ -241,8 +241,7 @@ See [LICENSE](LICENSE) for details.
 * **Alphacode** — Development, architecture, GUI, AI modules
 * **Community** — Testing, suggestions, feedback
 * **Microsoft** — Windows API documentation, PowerShell
-* **Special Thanks**: Beta testers & contributors (add the names you want)
-
+* **Special Thanks**: Beta testers & contributors 
 ---
 
 **Real power. Total control. Conscious optimization. Only with Alphacode GameBoost.**
