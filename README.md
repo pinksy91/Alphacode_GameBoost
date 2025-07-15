@@ -1,4 +1,5 @@
-# Alphacode GameBoost
+![Alphacode GameBoost Banner](gameboost.png)
+
 
 [![Powered by Alphacode](https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github)](https://github.com/Alphacode)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows)](#)
