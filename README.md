@@ -1,12 +1,13 @@
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pinksy91/Alphacode_GameBoost/main/logo.png" width="180" alt="Alphacode GameBoost Logo">
+  <img src="assets/logo.png" width="180" alt="Alphacode GameBoost Logo"/>
 </p>
 
 <h1 align="center">Alphacode GameBoost</h1>
 
 <p align="center">
-  <strong>Ultimate Edition v3.1.0 — Advanced Gaming Performance Suite</strong><br>
-  The all-in-one gaming optimizer for Windows 10/11 — powered by Alphacode
+  <strong>Ultimate Edition v3.1.0 — Suite di Ottimizzazione Gaming Professionale</strong><br>
+  Ottimizzatore all-in-one per Windows 10/11 — powered by <a href="https://github.com/Alphacode" target="_blank"><strong>Alphacode</strong></a>
 </p>
 
 <p align="center">
@@ -20,101 +21,231 @@
 
 ## 🚀 Cos'è Alphacode GameBoost?
 
-**Alphacode GameBoost** è una suite professionale per ottimizzare al massimo le prestazioni del tuo PC Windows. Perfetto per gamer competitivi, power user e appassionati di tweaking.
+**Alphacode GameBoost** è una suite definitiva e modulare per l’ottimizzazione delle prestazioni gaming su Windows. Pensata per gamer competitivi, enthusiast, content creator e power user che vogliono **spingere ogni componente al massimo** con sicurezza, backup e analisi AI.
 
-- ⚙️ Overclock e tweak automatizzati
-- 🧠 Analisi avanzata con motore AI
-- 💾 Backup & Restore delle configurazioni
-- 🎮 Profili personalizzabili: Conservative, Balanced, Aggressive, Extreme
-
----
-
-## 🖥️ Requisiti
-
-- Windows 10 o 11 (x64)
-- PowerShell 5.0+
-- Permessi da amministratore
-- Connessione Internet per le funzioni AI (opzionale)
+- 🎮 Profili: Conservative, Balanced, Aggressive, Maximum
+- 🧠 Analisi AI real-time: detection, raccomandazioni, report
+- 🔧 Tweaks avanzati: CPU, GPU, memoria, rete, registry
+- 💾 Backup/Ripristino automatici e selettivi
+- 🖥️ GUI moderna con log, progressi, status e quick actions
+- 🏆 Compatibilità next-gen: Zen 5, Arrow Lake, RTX 5090, RX 9000, Battlemage
 
 ---
 
-## 🎮 Funzionalità principali
+## 🖥️ Requisiti di Sistema
 
-- ✅ Ottimizzazioni CPU, RAM, GPU, Registro e Servizi
-- 🧠 Analisi AI con punteggio di integrità sistema
-- 🖥 GUI moderna + Log dettagliati + Modalità terminale
-- 🔁 Backup automatici e ripristino con 1 click
-- 💻 Compatibile con hardware di ultima generazione
+- **OS**: Windows 10 (19041+) o 11 (solo x64)
+- **PowerShell**: v5.1+ (meglio v7)
+- **Permessi**: Amministratore
+- **Spazio**: 50 MB liberi (backup/log)
+- **Connessione Internet**: solo per aggiornamenti/AI (opzionale)
+- **Antivirus**: Consigliata esclusione della cartella del tool
 
 ---
 
-## 📦 Download & Quick Start
+## 🏗️ Struttura del Repository
 
-1. Scarica o clona il repository:
-```bash
-git clone https://github.com/pinksy91/Alphacode_GameBoost
-```
+Alphacode_GameBoost/
+├── assets/                        # Logo, immagini, screenshot GUI
+│   ├── logo.png                   # Logo principale
+│   ├── gameboost.png              # Altro logo (GameBoost)
+│   ├── 1.png                      # Dashboard UI
+│   ├── 2.png                      # Stato ottimizzazione
+│   ├── 3.png                      # AI Scanner
+│   └── 4.png                      # Result screen
+├── modules/                       # Moduli PowerShell
+│   ├── FPS_Suite_Advanced_Gaming_module.ps1
+│   └── FPS_Suite_ScanUltimate_AI.ps1
+├── Alphacode_GameBoost.bat        # Launcher principale
+├── README.md                      # Questo file
+└── LICENSE                        # Licenza MIT
 
-2. Avvia `Alphacode_GameBoost.bat` come **Amministratore**
+---
 
-3. Scegli un profilo e segui la GUI
+## 🚦 Installazione & Primo Avvio
 
-> 💡 Consigliato: effettua un backup prima di qualsiasi modifica avanzata
+### 1. Download
+
+git clone https://github.com/pinksy91/Alphacode_GameBoost.git
+# oppure scarica ZIP ed estrai
+
+### 2. Avvio
+- Vai nella cartella estratta
+- **Tasto destro su** `Alphacode_GameBoost.bat` → **Esegui come amministratore**
+- Segui le istruzioni su schermo: viene avviata la GUI e richiesto il profilo da usare (Balanced consigliato per la prima volta)
+
+### 3. Sicurezza
+- **Backup automatico** prima di ogni ottimizzazione
+- **Restore 1-click** sempre disponibile
 
 ---
 
 ## 📸 Screenshot
 
-| Dashboard Principale | Stato Ottimizzazione |
-|----------------------|----------------------|
-| ![UI](1.png)         | ![System](2.png)     |
-| ![AI](3.png)         | ![Result](4.png)     |
+Dashboard Principale          Stato Ottimizzazione
+----------------------        ---------------------
+[assets/1.png]                [assets/2.png]
+
+AI Scanner                    Result Screen
+----------------------        ---------------------
+[assets/3.png]                [assets/4.png]
+
+---
+
+## 🎮 Profili di Ottimizzazione
+
+Profilo         | Descrizione breve                              | Target               | Rischio      
+----------------|------------------------------------------------|----------------------|--------------
+🛡️ Conservative | Ottimizzazioni leggere e sicure                | Principianti, lavoro | Molto basso  
+⚖️ Balanced     | Equilibrio tra prestazioni e stabilità         | Gaming, daily use    | Basso        
+🚀 Aggressive   | Prestazioni elevate, stabilità accettabile      | Gaming competitivo   | Moderato     
+🔥 Maximum      | Massime performance, richiede monitoraggio      | Enthusiast, OC       | Alto         
+
+---
+
+## 🧠 Analisi AI e Scanner Intelligente
+
+- **Auto-detection**: CPU, GPU, RAM, compatibilità
+- **Conflitti**: Segnala ottimizzazioni incompatibili o rischiose
+- **Suggerimenti**: Profilo ideale, tweak consigliati
+- **Report**: Esportazione log, backup, comparativa avanzata
+- **Export JSON**: Dati raw per troubleshooting/analisi
+
+---
+
+## 🔧 Ottimizzazioni Disponibili
+
+### Gaming & System
+- **GPU/CPU Priority**: Scheduling e boost prestazioni
+- **System Responsiveness**: Latenza minima
+- **GameDVR Off**, Hardware Scheduling On, DWM Tweaks, TDR Level
+
+### Memoria & Storage
+- **Paging Executive**, **Large System Cache**
+- **Memory Compression Off**, **Prefetch Tuning**
+
+### CPU & Processo
+- **Processor Parking Off**, **Priority Separation**
+- **Interrupt Handling**, **Timer ad alta risoluzione**
+
+### Rete
+- **TCP Optimizations** (CTCP, ECN)
+- **Network Throttling Off**
+- **DNS Caching, QoS Gaming**
+
+### Backup e Restore
+- **Automatici e timestamped**
+- **Restore totale/selettivo**
+- **Verifica integrità backup**
+
+---
+
+## 🧬 Compatibilità Hardware 
+
+CPU:  
+- AMD Ryzen 5000/7000/8000/9000 (Zen 3/4/5/X3D)
+- Intel 12/13/14 Gen, Arrow Lake (K, HX, H)
+
+GPU:  
+- NVIDIA RTX 30/40/50 (Blackwell incluso)
+- AMD Radeon RX 6000/7000/9000 (compreso Navi 44)
+- Intel ARC Alchemist, Battlemage
+
+RAM:  
+- DDR4 & DDR5 fino a 8000 MHz
+
+Altro:  
+- PCIe 5.0, USB4, Wi-Fi 6E, sistemi desktop, notebook e AIO
 
 ---
 
 ## ❓ FAQ
 
-**È reversibile?**
-> Sì. Il backup è automatico e puoi annullare ogni modifica.
+Le modifiche sono reversibili?
+Sì, ogni operazione è preceduta da backup automatico con restore immediato.
 
-**Funziona su Windows 11?**
-> Certamente. Ottimizzato per entrambe le versioni.
+L’AI serve davvero?
+Il modulo AI individua criticità, conflitti, suggerisce profili e compara performance — utile per chi cerca efficienza senza rischi.
 
-**È sicuro?**
-> Il codice è open source, documentato e privo di contenuti malevoli.
+Il tool è sicuro?
+Tutto open source, niente telemetria, niente tracking. Ispeziona ogni script liberamente.
 
-**Supporta hardware recente?**
-> Sì, aggiornato a **luglio 2025**, testato e compatibile con:
-> - CPU AMD Ryzen serie 7000, 8000, 9000 (inclusi modelli X3D)
-> - CPU Intel Core 12ª, 13ª, 14ª generazione e **Arrow Lake** (serie K/HX incluse)
-> - Schede video NVIDIA GeForce RTX serie 30, 40, 50 (Blackwell: 5090, 5080, 5070)
-> - Schede video AMD Radeon RX 6000, RX 7000, e **RX 9000** (9060 XT, 9070, 9070 XT)
-> - GPU AMD RDNA 4 (Navi 44, 32 CU, 64 AI Accelerator, 16 GB GDDR6)
-
+Supporta hardware di ultima generazione?
+Sì, validato su Zen 5, Arrow Lake, RTX 5090, RX 9000, Battlemage.
 
 ---
 
-## 🧑‍💻 Credits
+## 🛠️ Troubleshooting & Log
 
-Creato con passione da **Alphacode**  
-Special thanks a tutti i tester e utenti che hanno supportato il progetto ❤️
+- Execution Policy:
+  Esegui `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned` da PowerShell come admin
+- Antivirus:
+  Aggiungi esclusione per la cartella del tool  
+- Log:
+  `%LOCALAPPDATA%\FPSSuitePro\Logs`
+  Backup in `%LOCALAPPDATA%\FPSSuitePro\Backups`
+- Restore:
+  Sempre accessibile da GUI e CLI
+
+---
+
+## ⚠️ Avvertenze e Limitazioni
+
+- Crea sempre backup prima di modifiche importanti
+- Testa le ottimizzazioni più spinte prima di sessioni critiche
+- Il tool è pensato solo per Windows 10/11 x64
+- Alcune ottimizzazioni sono hardware-dependent
+
+---
+
+## 🤝 Contributi
+
+Come contribuire:
+1. Fork del repo
+2. Crea un branch per la tua feature/patch
+3. Testa su più sistemi
+4. Documenta e invia una pull request
+
+Bug report:
+Apri una Issue su GitHub, allega log, info sistema e passi per riprodurre.
 
 ---
 
 ## 📄 Licenza
 
-Questo progetto è distribuito con licenza **MIT**. Vedi file [LICENSE](LICENSE).
+Distribuito con licenza MIT.  
+Consulta [LICENSE](LICENSE) per dettagli.
+
+- Uso commerciale: Consentito, con attribuzione
+- Modifica e ridistribuzione: Libera, senza garanzie
 
 ---
 
-## ⭐️ Supporta il progetto
+## 👨‍💻 Credits
 
-Lascia una ⭐ se ti piace! Condividilo con la community 💬
+- Alphacode — Sviluppo, architettura, GUI, moduli AI
+- Community — Testing, suggerimenti, feedback
+- Microsoft — Documentazione API Windows, PowerShell
+- Special Thanks: Beta tester & contributor (aggiungi i nomi che vuoi)
 
 ---
 
-<p align="center">
-  <em>Performance reale. Ottimizzazione consapevole. Solo con Alphacode GameBoost.</em>
-</p>
+Potenza reale. Controllo totale. Ottimizzazione consapevole.
+Solo con Alphacode GameBoost.
 
+---
+
+⭐️ Supporta il Progetto
+
+Se il tool ti è utile lascia una ⭐ su GitHub:
+https://github.com/pinksy91/Alphacode_GameBoost
+Condividi e aiutaci a migliorare con feedback!
+
+---
+
+Link Utili
+- Repository Ufficiale: https://github.com/pinksy91/Alphacode_GameBoost
+- Profilo Alphacode: https://github.com/Alphacode
+- Segnala Issue/Bug: https://github.com/pinksy91/Alphacode_GameBoost/issues
+- Licenza MIT: LICENSE
 
