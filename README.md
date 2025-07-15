@@ -75,9 +75,6 @@ Tweaker nel DNA. Modding, script, overclock, automazione: se si può ottimizzare
 ## ❤️ Supporto & contatti
 
 - GitHub: [Alphacode](https://github.com/Alphacode)
-- Telegram: [@alphacode](https://t.me/alphacode)
-- LinkedIn: [Filippo Romagnoli](https://www.linkedin.com/in/filippo-romagnoli)
-
 ---
 
 ## ⭐️ Lascia una stella se ti piace!
