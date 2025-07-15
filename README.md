@@ -1,3 +1,21 @@
+<p align="center">
+  <img src="assets/logo.png" width="180" alt="Alphacode GameBoost Logo"/>
+</p>
+
+<h1 align="center">Alphacode GameBoost</h1>
+
+<p align="center">
+  <strong>Ultimate Edition v3.1.0 — Suite di Ottimizzazione Gaming Professionale</strong><br>
+  Ottimizzatore all-in-one per Windows 10/11 — powered by <a href="https://github.com/Alphacode" target="_blank"><strong>Alphacode</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Alphacode"><img src="https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github"></a>
+  <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows">
+  <img src="https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+</p>
+
 ---
 
 ## 🚀 Cos'è Alphacode GameBoost?
@@ -66,7 +84,25 @@ git clone [https://github.com/pinksy91/Alphacode\_GameBoost.git](https://github.
 
 ## 📸 Screenshot
 
+<p align="center">
+  <img src="assets/1.png" width="340" alt="Dashboard Principale"/><br>
+  <b>Dashboard Principale</b>
+</p>
+<p align="center">
+  <img src="assets/2.png" width="340" alt="Stato Ottimizzazione"/><br>
+  <b>Stato Ottimizzazione</b>
+</p>
+<p align="center">
+  <img src="assets/3.png" width="340" alt="AI Scanner"/><br>
+  <b>AI Scanner</b>
+</p>
+<p align="center">
+  <img src="assets/4.png" width="340" alt="Result Screen"/><br>
+  <b>Result Screen</b>
+</p>
+
 ---
+
 
 ## 🎮 Profili di Ottimizzazione
 
