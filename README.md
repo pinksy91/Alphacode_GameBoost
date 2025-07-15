@@ -34,7 +34,20 @@ Tuning, automazione, profili avanzati, analisi, backup e una GUI di nuova genera
 
 ## 📸 Screenshot
 
-![Alphacode GameBoost Screenshot](screenshot.png)
+## 📸 Screenshot
+
+**Dashboard Principale**
+![Main UI](1.png)
+
+**Ottimizzazione Stato Sistema**
+![System Optimization Status](2.png)
+
+**Dettaglio Analisi AI**
+![AI Optimization Analysis](3.png)
+
+**Performance Metrics e Suggerimenti**
+![Performance Metrics](4.png)
+
 
 ---
 
