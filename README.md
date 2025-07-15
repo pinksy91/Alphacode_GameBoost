@@ -172,7 +172,7 @@ GPU:
 
 RAM:
 
-* DDR4 & DDR5 fino a 8000 MHz
+* DDR4 & DDR5 
 
 Altro:
 
