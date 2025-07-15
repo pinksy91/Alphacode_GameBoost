@@ -1,38 +1,51 @@
 ![Alphacode GameBoost Banner](gameboost.png)
 
-
 [![Powered by Alphacode](https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github)](https://github.com/Alphacode)
 [![Windows 10/11](https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows)](#)
 [![Version](https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-![Alphacode GameBoost Banner](screenshot.png)
-
-> **Ultimate Edition v3.1.0 — Advanced Gaming Performance Suite**
->
+> **Ultimate Edition v3.1.0 — Advanced Gaming Performance Suite**  
 > _The all-in-one gaming optimizer for Windows 10/11 — powered by Alphacode_
 
 ---
 
 ## 🚀 Cos'è Alphacode GameBoost?
 
-**Alphacode GameBoost** è il tool definitivo per ottimizzare le performance di gioco su Windows.  
-Tuning, automazione, profili avanzati, analisi, backup e una GUI di nuova generazione — tutto integrato per power user e pro gamer.
+**Alphacode GameBoost** è la suite definitiva per spremere ogni FPS dal tuo PC Windows grazie a profili di ottimizzazione avanzati, analisi AI, backup e tweak automatici.  
+Ideale per gamer competitivi, smanettoni e chiunque voglia il massimo dal proprio hardware.
+
+---
+
+## 🖥️ Requisiti
+
+- **Sistema operativo:** Windows 10/11 (x64)
+- **PowerShell:** v5.0 o superiore (integrato in Windows 10+)
+- **Permessi:** Avviare come Amministratore per tutte le funzioni
+- **Connessione internet:** consigliata per analisi AI dinamica
 
 ---
 
 ## 🎮 Funzionalità principali
 
-- Profili di ottimizzazione: Conservative, Balanced, Aggressive, Maximum Performance  
-- Ottimizzazione automatica di parametri hardware e software
-- Analisi avanzata del sistema e del registro
-- Backup/Restore delle configurazioni
-- Compatibilità con AMD, Intel, NVIDIA/AMD GPU
-- Log dettagliato, suggerimenti dinamici, GUI moderna
+- Profili di ottimizzazione: Conservative, Balanced, Aggressive, Maximum Performance
+- Tuning automatico dei parametri hardware/software
+- Analisi avanzata dello stato di sistema e registro
+- Backup e ripristino delle configurazioni
+- Compatibilità AMD, Intel, NVIDIA/AMD GPU
+- Log dettagliato, suggerimenti AI-driven, GUI moderna
 
 ---
 
-## 📸 Screenshot
+## 📦 Download & Quick Start
+
+1. **Scarica gli script** (`.ps1`, `.bat`) dal [repository](https://github.com/pinksy91/Alphacode_GameBoost)
+2. Avvia `Alphacode_GameBoost.bat` come **amministratore** (tasto destro → “Esegui come amministratore”)
+3. Seleziona un profilo, ottimizza e monitora l’attività
+
+> **Consiglio:** Effettua un backup automatico dal tool prima di qualsiasi ottimizzazione avanzata.
+
+---
 
 ## 📸 Screenshot
 
@@ -48,21 +61,35 @@ Tuning, automazione, profili avanzati, analisi, backup e una GUI di nuova genera
 **Performance Metrics e Suggerimenti**
 ![Performance Metrics](4.png)
 
-
 ---
 
-## 🛠️ Come si usa
+## ❓ FAQ
 
-1. Scarica gli script `.ps1` e `.bat`
-2. Avvia `Alphacode_GameBoost.bat` come **amministratore**
-3. Seleziona un profilo, ottimizza e monitora l’attività
+**Il tool è reversibile?**  
+Sì, puoi effettuare il backup della configurazione originale e ripristinarla in qualsiasi momento tramite la funzione integrata.
+
+**Funziona anche su Windows 11?**  
+Assolutamente sì! Testato e ottimizzato sia per Windows 10 che 11.
+
+**Serve disattivare l’antivirus?**  
+No, ma alcuni antivirus potrebbero segnalare falsi positivi a causa dei comandi avanzati. Se accade, aggiungi il tool alle eccezioni.
+
+**Il tool è sicuro?**  
+Tutte le ottimizzazioni sono documentate e reversibili. Codice open source e ispezionabile da chiunque.
+
+**Supporta hardware AMD/Intel/NVIDIA?**  
+Sì, supporto completo e tuning dedicato anche per le ultime generazioni di CPU e GPU.
+
+**Come si disinstalla/ripristina?**  
+Basta ripristinare il backup dal menu del tool o annullare le modifiche tramite le opzioni disponibili.
 
 ---
 
 ## 👤 Autore
 
 **Alphacode**  
-Tweaker nel DNA. Modding, script, overclock, automazione: se si può ottimizzare, lo faccio.
+Tweaker nel DNA. Modding, script, overclock, automazione: se si può ottimizzare, lo faccio.  
+[GitHub](https://github.com/Alphacode)
 
 ---
 
@@ -75,6 +102,10 @@ Tweaker nel DNA. Modding, script, overclock, automazione: se si può ottimizzare
 ## ❤️ Supporto & contatti
 
 - GitHub: [Alphacode](https://github.com/Alphacode)
+
 ---
 
 ## ⭐️ Lascia una stella se ti piace!
+
+---
+
