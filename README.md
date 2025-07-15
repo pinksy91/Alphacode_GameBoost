@@ -85,14 +85,6 @@ Basta ripristinare il backup dal menu del tool o annullare le modifiche tramite 
 
 ---
 
-## 👤 Autore
-
-**Alphacode**  
-Tweaker nel DNA. Modding, script, overclock, automazione: se si può ottimizzare, lo faccio.  
-[GitHub](https://github.com/Alphacode)
-
----
-
 ## 📄 Licenza
 
 [MIT](LICENSE)
