@@ -242,7 +242,7 @@ Consulta [LICENSE](LICENSE) per dettagli.
 * Alphacode — Sviluppo, architettura, GUI, moduli AI
 * Community — Testing, suggerimenti, feedback
 * Microsoft — Documentazione API Windows, PowerShell
-* Special Thanks: Beta tester & contributor (aggiungi i nomi che vuoi)
+* Special Thanks: Beta tester & contributor 
 
 ---
 
