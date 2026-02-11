@@ -1,0 +1,91 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup PowerShell 7
+      uses: microsoft/setup-msedge@v1  # Ensures modern PowerShell
+    
+    - name: Install Pester
+      shell: pwsh
+      run: |
+        Install-Module -Name Pester -Force -SkipPublisherCheck -MinimumVersion 5.0
+        Write-Host "Pester version: $(Get-Module Pester -ListAvailable | Select-Object -First 1 | Select-Object -ExpandProperty Version)"
+    
+    - name: Run Unit Tests
+      shell: pwsh
+      run: |
+        $config = New-PesterConfiguration
+        $config.Run.Path = ".\tests\unit\"
+        $config.Output.Verbosity = 'Detailed'
+        $config.TestResult.Enabled = $true
+        $config.TestResult.OutputPath = "test-results.xml"
+        $config.TestResult.OutputFormat = 'NUnitXml'
+        
+        Invoke-Pester -Configuration $config
+    
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: test-results.xml
+    
+    - name: Publish Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: test-results.xml
+        reporter: java-junit
+    
+    - name: Run PSScriptAnalyzer
+      shell: pwsh
+      run: |
+        Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
+        
+        $results = Invoke-ScriptAnalyzer -Path .\modules\ -Recurse -ReportSummary
+        
+        # Fail if there are any errors
+        $errors = $results | Where-Object { $_.Severity -eq 'Error' }
+        if ($errors.Count -gt 0) {
+            Write-Error "PSScriptAnalyzer found $($errors.Count) errors"
+            exit 1
+        }
+        
+        # Warn if there are warnings
+        $warnings = $results | Where-Object { $_.Severity -eq 'Warning' }
+        if ($warnings.Count -gt 0) {
+            Write-Warning "PSScriptAnalyzer found $($warnings.Count) warnings"
+        }
+    
+    - name: Check for Dangerous Code Patterns
+      shell: pwsh
+      run: |
+        # Check for hardcoded Windows Defender disable
+        $defenderPatterns = Select-String -Path .\modules\*.ps1 -Pattern "DisableRealtimeMonitoring|DisableAntiSpyware" -SimpleMatch
+        if ($defenderPatterns) {
+            Write-Error "Found Windows Defender disable code (should be removed):"
+            $defenderPatterns | ForEach-Object { Write-Host $_ }
+            exit 1
+        }
+        
+        # Check for hardcoded paths (should use config)
+        $hardcodedPaths = Select-String -Path .\modules\*.ps1 -Pattern '\$env:LOCALAPPDATA\\FPSSuitePro' -SimpleMatch
+        if ($hardcodedPaths.Count -gt 3) {
+            Write-Warning "Found $($hardcodedPaths.Count) potentially hardcoded paths (consider using config)"
+        }
+        
+        Write-Host "✅ No dangerous code patterns detected"

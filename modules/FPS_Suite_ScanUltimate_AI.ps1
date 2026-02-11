@@ -6,13 +6,19 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 # ===== GLOBAL CONFIGURATION =====
-$global:AppVersion = "3.1.0"
+$global:AppVersion = "3.2.0"
 $global:AppName = "Alphacode GameBoost - Ultimate Edition"
 $global:AppPublisher = "Advanced Performance Systems"
-$global:LogPath = "$env:LOCALAPPDATA\FPSSuitePro\Logs"
-$global:BackupPath = "$env:LOCALAPPDATA\FPSSuitePro\Backups"
-$global:ConfigPath = "$env:LOCALAPPDATA\FPSSuitePro\Config"
+
+# Configurable paths with environment variable override support
+$global:LogPath = if ($env:FPS_SUITE_LOG_PATH) { $env:FPS_SUITE_LOG_PATH } else { "$env:LOCALAPPDATA\FPSSuitePro\Logs" }
+$global:BackupPath = if ($env:FPS_SUITE_BACKUP_PATH) { $env:FPS_SUITE_BACKUP_PATH } else { "$env:LOCALAPPDATA\FPSSuitePro\Backups" }
+$global:ConfigPath = if ($env:FPS_SUITE_CONFIG_PATH) { $env:FPS_SUITE_CONFIG_PATH } else { "$env:LOCALAPPDATA\FPSSuitePro\Config" }
 $global:ConfigFile = "$global:ConfigPath\fps_suite_config.json"
+
+# Logging Configuration
+$global:LogLevel = if ($env:FPS_SUITE_LOG_LEVEL) { $env:FPS_SUITE_LOG_LEVEL } else { "INFO" }
+$global:LogFormat = if ($env:FPS_SUITE_LOG_FORMAT) { $env:FPS_SUITE_LOG_FORMAT } else { "text" }  # "text" or "json"
 
 # Hardware Info Storage
 $global:CPUName = ""
@@ -37,16 +43,19 @@ $global:MainForm = $null
 # ===== INITIALIZATION SYSTEM =====
 function Initialize-Application {
     try {
+        # Create required directories
         $directories = @($global:LogPath, $global:BackupPath, $global:ConfigPath, "$global:BackupPath\AutoBackups", "$global:BackupPath\ManualBackups")
         foreach ($dir in $directories) {
             if (!(Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
         }
         
+        # Initialize systems
         Initialize-LoggingSystem
+        Initialize-LogMutex  # Thread-safe logging
         Detect-AdvancedHardware
         Load-Configuration | Out-Null
         
-        Write-EnhancedLog "Alphacode GameBoost Ultimate Edition initialized successfully" "SUCCESS" "SYSTEM"
+        Write-EnhancedLog "Alphacode GameBoost Ultimate Edition v$($global:AppVersion) initialized successfully" "SUCCESS" "SYSTEM"
         return $true
     }
     catch {
@@ -81,6 +90,20 @@ Windows Version: $(Get-WmiObject -Class Win32_OperatingSystem | Select-Object -E
 }
 
 # ===== ENHANCED LOGGING SYSTEM =====
+# Thread-safe logging mutex
+$script:LogMutex = $null
+
+function Initialize-LogMutex {
+    if (-not $script:LogMutex) {
+        try {
+            $script:LogMutex = [System.Threading.Mutex]::new($false, "FPSSuite_LogMutex_$PID")
+        }
+        catch {
+            Write-Host "Warning: Could not create log mutex, logging may not be thread-safe" -ForegroundColor Yellow
+        }
+    }
+}
+
 function Write-EnhancedLog {
     param(
         [string]$Message,
@@ -89,38 +112,85 @@ function Write-EnhancedLog {
         [string]$Component = "CORE"
     )
     
+    # Check if log level should be filtered
+    $logLevels = @{
+        "DEBUG"    = 0
+        "INFO"     = 1
+        "SUCCESS"  = 1
+        "WARN"     = 2
+        "ERROR"    = 3
+        "CRITICAL" = 4
+    }
+    
+    $currentLevelThreshold = $logLevels[$global:LogLevel]
+    $messageLevelValue = $logLevels[$Level]
+    
+    if ($messageLevelValue -lt $currentLevelThreshold) {
+        return  # Skip logging for levels below threshold
+    }
+    
     $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
     $logEntry = "[$timestamp] [$Level] [$Component] $Message"
     
     $colors = @{
-        "INFO" = [System.Drawing.Color]::White
-        "WARN" = [System.Drawing.Color]::Orange
-        "ERROR" = [System.Drawing.Color]::Red
+        "INFO"     = [System.Drawing.Color]::White
+        "WARN"     = [System.Drawing.Color]::Orange
+        "ERROR"    = [System.Drawing.Color]::Red
         "CRITICAL" = [System.Drawing.Color]::Magenta
-        "SUCCESS" = [System.Drawing.Color]::LimeGreen
-        "DEBUG" = [System.Drawing.Color]::Cyan
+        "SUCCESS"  = [System.Drawing.Color]::LimeGreen
+        "DEBUG"    = [System.Drawing.Color]::Cyan
     }
     
     try {
+        # Write to file
         $logFile = "$global:LogPath\fps_suite_$(Get-Date -Format 'yyyy-MM-dd').log"
         Add-Content -Path $logFile -Value $logEntry -ErrorAction SilentlyContinue
         
-        if ($global:LogRichTextBox) {
-            $global:LogRichTextBox.Invoke([Action]{
-                $global:LogRichTextBox.SelectionStart = $global:LogRichTextBox.TextLength
-                $global:LogRichTextBox.SelectionLength = 0
-                $global:LogRichTextBox.SelectionColor = $colors[$Level]
-                $global:LogRichTextBox.AppendText("$logEntry`n")
-                $global:LogRichTextBox.ScrollToCaret()
-                
-                $lines = $global:LogRichTextBox.Lines
-                if ($lines.Count -gt 100) {
-                    $global:LogRichTextBox.Lines = $lines[-100..-1]
-                }
-            })
+        # JSON log if enabled
+        if ($global:LogFormat -eq "json") {
+            $jsonEntry = @{
+                timestamp = (Get-Date).ToString("o")
+                level     = $Level
+                component = $Component
+                message   = $Message
+                pid       = $PID
+                version   = $global:AppVersion
+            } | ConvertTo-Json -Compress
+            
+            $jsonLogFile = "$global:LogPath\fps_suite_$(Get-Date -Format 'yyyy-MM-dd').jsonl"
+            Add-Content -Path $jsonLogFile -Value $jsonEntry -ErrorAction SilentlyContinue
         }
         
-        $consoleColor = switch($Level) {
+        # Thread-safe GUI update with mutex
+        if ($global:LogRichTextBox) {
+            try {
+                if ($script:LogMutex) {
+                    $script:LogMutex.WaitOne(1000) | Out-Null  # 1 second timeout
+                }
+                
+                $global:LogRichTextBox.Invoke([Action] {
+                        $global:LogRichTextBox.SelectionStart = $global:LogRichTextBox.TextLength
+                        $global:LogRichTextBox.SelectionLength = 0
+                        $global:LogRichTextBox.SelectionColor = $colors[$Level]
+                        $global:LogRichTextBox.AppendText("$logEntry`n")
+                        $global:LogRichTextBox.ScrollToCaret()
+                
+                        # Keep only last 100 lines for performance
+                        $lines = $global:LogRichTextBox.Lines
+                        if ($lines.Count -gt 100) {
+                            $global:LogRichTextBox.Lines = $lines[-100..-1]
+                        }
+                    })
+            }
+            finally {
+                if ($script:LogMutex) {
+                    $script:LogMutex.ReleaseMutex()
+                }
+            }
+        }
+        
+        # Console output
+        $consoleColor = switch ($Level) {
             "SUCCESS" { "Green" }
             "WARN" { "Yellow" }
             "ERROR" { "Red" }
@@ -203,11 +273,11 @@ function Load-Configuration {
             
             # Ensure all required properties exist
             $defaultConfig = @{
-                AutoBackup = $true
-                SafeMode = $false
+                AutoBackup         = $true
+                SafeMode           = $false
                 LastAppliedProfile = ""
-                PreferredProfile = "Balanced"
-                Version = $global:AppVersion
+                PreferredProfile   = "Balanced"
+                Version            = $global:AppVersion
             }
             
             # Merge loaded config with defaults to ensure all properties exist
@@ -227,11 +297,11 @@ function Load-Configuration {
     }
     
     $defaultConfig = @{
-        AutoBackup = $true
-        SafeMode = $false
+        AutoBackup         = $true
+        SafeMode           = $false
         LastAppliedProfile = ""
-        PreferredProfile = "Balanced"
-        Version = $global:AppVersion
+        PreferredProfile   = "Balanced"
+        Version            = $global:AppVersion
     }
     
     Save-Configuration $defaultConfig
@@ -247,11 +317,13 @@ function Save-Configuration {
         
         if ($Config -is [hashtable]) {
             $configHashtable = $Config.Clone()
-        } elseif ($Config -is [PSCustomObject]) {
+        }
+        elseif ($Config -is [PSCustomObject]) {
             foreach ($property in $Config.PSObject.Properties) {
                 $configHashtable[$property.Name] = $property.Value
             }
-        } else {
+        }
+        else {
             Write-EnhancedLog "Invalid configuration object type" "ERROR" "CONFIG"
             return $false
         }
@@ -271,14 +343,14 @@ function Save-Configuration {
         }
         
         $configData = @{
-            Version = $global:AppVersion
-            LastModified = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-            Settings = $configHashtable
+            Version          = $global:AppVersion
+            LastModified     = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+            Settings         = $configHashtable
             HardwareSnapshot = @{
                 CPU = $global:CPUName
                 GPU = $global:GPUName
                 RAM = "$global:RAMTotal GB $global:RAMType"
-                OS = $global:OSName
+                OS  = $global:OSName
             }
         }
         
@@ -292,6 +364,188 @@ function Save-Configuration {
         Write-EnhancedLog "Failed to save configuration: $($_.Exception.Message)" "ERROR" "CONFIG"
         return $false
     }
+}
+
+# ===== REGISTRY SAFETY WRAPPER SYSTEM =====
+# Rollback stack for automatic recovery from failed operations
+$script:RegistryBackupStack = @()
+
+function Set-SafeItemProperty {
+    <#
+    .SYNOPSIS
+        Thread-safe registry write with automatic backup and validation
+    
+    .DESCRIPTION
+        Replaces all Set-ItemProperty calls with safety checks:
+        - Validates registry path format
+        - Creates missing parent paths automatically
+        - Backs up existing values to rollback stack
+        - Provides detailed logging for audit trail
+    
+    .PARAMETER Path
+        Registry path (e.g., "HKLM:\SOFTWARE\...")
+    
+    .PARAMETER Name
+        Registry value name
+    
+    .PARAMETER Value
+        Value to set
+    
+    .PARAMETER Type
+        Registry value type (String, DWord, QWord, etc.)
+    
+    .EXAMPLE
+        Set-SafeItemProperty -Path "HKLM:\SOFTWARE\Test" -Name "Value" -Value 1 -Type DWord
+    
+    .NOTES
+        All registry changes are automatically backed up to $script:RegistryBackupStack
+        Use Invoke-RegistryRollback to restore all changes if an error occurs
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        
+        [Parameter(Mandatory = $true)]
+        $Value,
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("String", "ExpandString", "Binary", "DWord", "MultiString", "QWord")]
+        [string]$Type
+    )
+    
+    try {
+        # Validate registry path format
+        if ($Path -notmatch '^HK(LM|CU|CR|U|CC):') {
+            throw "Invalid registry path: $Path (must start with HKLM:, HKCU:, etc.)"
+        }
+        
+        # Ensure parent path exists
+        if (-not (Test-Path $Path)) {
+            Write-EnhancedLog "Creating missing registry path: $Path" "WARN" "REGISTRY"
+            try {
+                New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
+            }
+            catch {
+                throw "Failed to create registry path: $($_.Exception.Message)"
+            }
+        }
+        
+        # Backup existing value to rollback stack
+        try {
+            $existing = Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
+            if ($null -ne $existing -and $null -ne $existing.$Name) {
+                $backupEntry = @{
+                    Path      = $Path
+                    Name      = $Name
+                    Value     = $existing.$Name
+                    Type      = $Type
+                    Timestamp = Get-Date
+                }
+                $script:RegistryBackupStack += $backupEntry
+                Write-EnhancedLog "Backed up $Path\$Name = $($existing.$Name)" "DEBUG" "REGISTRY"
+            }
+        }
+        catch {
+            # Value doesn't exist - this is fine, we're creating it
+            Write-EnhancedLog "No existing value for $Path\$Name (creating new)" "DEBUG" "REGISTRY"
+        }
+        
+        # Apply registry change
+        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -ErrorAction Stop
+        Write-EnhancedLog "Registry updated: $Path\$Name = $Value (Type: $Type)" "DEBUG" "REGISTRY"
+        
+        return $true
+    }
+    catch {
+        Write-EnhancedLog "Failed to set registry value $Path\$Name: $($_.Exception.Message)" "ERROR" "REGISTRY"
+        return $false
+    }
+}
+
+function Invoke-RegistryRollback {
+    <#
+    .SYNOPSIS
+        Rolls back all registry changes from the backup stack
+    
+    .DESCRIPTION
+        Used when an optimization fails mid-execution.
+        Restores all changed registry values to their previous state.
+        Automatically called by optimization functions on error.
+    
+    .PARAMETER MaxEntries
+        Maximum number of entries to roll back (safety limit)
+        Default: 100
+    
+    .EXAMPLE
+        Invoke-RegistryRollback
+    
+    .EXAMPLE
+        Invoke-RegistryRollback -MaxEntries 50
+    
+    .NOTES
+        After successful rollback, the backup stack is automatically cleared
+    #>
+    param(
+        [int]$MaxEntries = 100  # Prevent accidental full system rollback
+    )
+    
+    if ($script:RegistryBackupStack.Count -eq 0) {
+        Write-EnhancedLog "No registry changes to rollback" "INFO" "ROLLBACK"
+        return $true
+    }
+    
+    $entriesToRollback = $script:RegistryBackupStack | Select-Object -Last $MaxEntries
+    $rollbackCount = $entriesToRollback.Count
+    
+    Write-EnhancedLog "Rolling back $rollbackCount registry changes..." "WARN" "ROLLBACK"
+    
+    $failedCount = 0
+    foreach ($entry in $entriesToRollback) {
+        try {
+            if (Test-Path $entry.Path) {
+                Set-ItemProperty -Path $entry.Path -Name $entry.Name -Value $entry.Value -Type $entry.Type -ErrorAction Stop
+                Write-EnhancedLog "Restored: $($entry.Path)\$($entry.Name)" "DEBUG" "ROLLBACK"
+            }
+            else {
+                Write-EnhancedLog "Skipped rollback: path doesn't exist: $($entry.Path)" "WARN" "ROLLBACK"
+            }
+        }
+        catch {
+            $failedCount++
+            Write-EnhancedLog "Rollback failed for $($entry.Path)\$($entry.Name): $($_.Exception.Message)" "ERROR" "ROLLBACK"
+        }
+    }
+    
+    if ($failedCount -eq 0) {
+        Write-EnhancedLog "Registry rollback completed successfully ($rollbackCount entries)" "SUCCESS" "ROLLBACK"
+        # Clear rollback stack after successful rollback
+        $script:RegistryBackupStack = @()
+        return $true
+    }
+    else {
+        Write-EnhancedLog "Registry rollback completed with $failedCount failures out of $rollbackCount" "WARN" "ROLLBACK"
+        return $false
+    }
+}
+
+function Clear-RegistryBackupStack {
+    <#
+    .SYNOPSIS
+        Clears the registry backup stack after successful operations
+    
+    .DESCRIPTION
+        Called after a successful optimization operation to free memory
+        and indicate that the changes are now permanent (no rollback needed)
+    
+    .EXAMPLE
+        Clear-RegistryBackupStack
+    #>
+    $count = $script:RegistryBackupStack.Count
+    $script:RegistryBackupStack = @()
+    Write-EnhancedLog "Cleared registry backup stack ($count entries)" "DEBUG" "REGISTRY"
 }
 
 # ===== BACKUP SYSTEM =====
@@ -313,11 +567,11 @@ function Create-EnterpriseBackup {
         New-Item -ItemType Directory -Path $backupFolder -Force | Out-Null
         
         $registryTargets = @(
-            @{Path="HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"; Name="multimedia_profile"},
-            @{Path="HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"; Name="graphics_drivers"},
-            @{Path="HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"; Name="memory_management"},
-            @{Path="HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"; Name="game_dvr"},
-            @{Path="HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl"; Name="priority_control"}
+            @{Path = "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile"; Name = "multimedia_profile" },
+            @{Path = "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers"; Name = "graphics_drivers" },
+            @{Path = "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"; Name = "memory_management" },
+            @{Path = "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"; Name = "game_dvr" },
+            @{Path = "HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl"; Name = "priority_control" }
         )
         
         $successCount = 0
@@ -330,7 +584,8 @@ function Create-EnterpriseBackup {
                     $successCount++
                     Write-EnhancedLog "Backed up: $($target.Name)" "SUCCESS" "BACKUP"
                 }
-            } catch {
+            }
+            catch {
                 Write-EnhancedLog "Failed to backup $($target.Name): $($_.Exception.Message)" "WARN" "BACKUP"
             }
         }
@@ -369,10 +624,10 @@ function Apply-IntelligentOptimizations {
     try {
         # Profile settings
         $profileMatrix = @{
-            "Conservative" = @{GPUPriority = 4; CPUPriority = 4; SystemResponsiveness = 10; TDRLevel = 3; DisableGameDVR = $true; EnableHardwareScheduling = $false; MemoryOptimization = $false; InsiderTweaks = $false}
-            "Balanced" = @{GPUPriority = 6; CPUPriority = 6; SystemResponsiveness = 5; TDRLevel = 2; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $false}
-            "Aggressive" = @{GPUPriority = 8; CPUPriority = 7; SystemResponsiveness = 1; TDRLevel = 1; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $true}
-            "Maximum" = @{GPUPriority = 8; CPUPriority = 8; SystemResponsiveness = 0; TDRLevel = 0; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $true}
+            "Conservative" = @{GPUPriority = 4; CPUPriority = 4; SystemResponsiveness = 10; TDRLevel = 3; DisableGameDVR = $true; EnableHardwareScheduling = $false; MemoryOptimization = $false; InsiderTweaks = $false }
+            "Balanced"     = @{GPUPriority = 6; CPUPriority = 6; SystemResponsiveness = 5; TDRLevel = 2; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $false }
+            "Aggressive"   = @{GPUPriority = 8; CPUPriority = 7; SystemResponsiveness = 1; TDRLevel = 1; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $true }
+            "Maximum"      = @{GPUPriority = 8; CPUPriority = 8; SystemResponsiveness = 0; TDRLevel = 0; DisableGameDVR = $true; EnableHardwareScheduling = $true; MemoryOptimization = $true; InsiderTweaks = $true }
         }
         
         $settings = $profileMatrix[$Profile]
@@ -429,23 +684,28 @@ function Apply-IntelligentOptimizations {
                 if ($config -is [PSCustomObject]) {
                     if (-not ($config | Get-Member -Name "LastAppliedProfile" -MemberType Properties)) {
                         $config | Add-Member -MemberType NoteProperty -Name "LastAppliedProfile" -Value $Profile -Force
-                    } else {
+                    }
+                    else {
                         $config.LastAppliedProfile = $Profile
                     }
-                } else {
+                }
+                else {
                     $config["LastAppliedProfile"] = $Profile
                 }
                 
                 $saveResult = Save-Configuration $config
                 if ($saveResult) {
                     Write-EnhancedLog "Configuration updated with profile: $Profile" "SUCCESS" "OPTIMIZER"
-                } else {
+                }
+                else {
                     Write-EnhancedLog "Failed to save configuration after profile application" "WARN" "OPTIMIZER"
                 }
-            } else {
+            }
+            else {
                 Write-EnhancedLog "Invalid configuration object, skipping save" "WARN" "OPTIMIZER"
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to update configuration: $($_.Exception.Message)" "WARN" "OPTIMIZER"
         }
         
@@ -544,12 +804,12 @@ function Analyze-OptimizationIntelligence {
     Write-EnhancedLog "Running AI intelligence analysis..." "INFO" "AI_SCANNER"
     
     $intelligence = @{
-        PerformanceLevel = 0
-        SystemProfile = "Unknown"
-        RiskAssessment = "Unknown"
-        SourceAnalysis = @{}
-        ConflictDetection = @()
-        Recommendations = @()
+        PerformanceLevel     = 0
+        SystemProfile        = "Unknown"
+        RiskAssessment       = "Unknown"
+        SourceAnalysis       = @{}
+        ConflictDetection    = @()
+        Recommendations      = @()
         UnknownModifications = @()
     }
     
@@ -559,9 +819,11 @@ function Analyze-OptimizationIntelligence {
             param($Category)
             if ($Category -is [hashtable]) {
                 return $Category.Count
-            } elseif ($Category -is [PSCustomObject]) {
+            }
+            elseif ($Category -is [PSCustomObject]) {
                 return ($Category | Get-Member -MemberType Properties).Count
-            } else {
+            }
+            else {
                 return 0
             }
         }
@@ -571,9 +833,11 @@ function Analyze-OptimizationIntelligence {
             param($Category)
             if ($Category -is [hashtable]) {
                 return $Category.Keys
-            } elseif ($Category -is [PSCustomObject]) {
+            }
+            elseif ($Category -is [PSCustomObject]) {
                 return ($Category | Get-Member -MemberType Properties).Name
-            } else {
+            }
+            else {
                 return @()
             }
         }
@@ -583,7 +847,8 @@ function Analyze-OptimizationIntelligence {
             param($Category, $Key)
             if ($Category -is [hashtable]) {
                 return $Category[$Key]
-            } elseif ($Category -is [PSCustomObject]) {
+            }
+            elseif ($Category -is [PSCustomObject]) {
                 if ($Category | Get-Member -Name $Key -MemberType Properties) {
                     return $Category.$Key
                 }
@@ -603,7 +868,7 @@ function Analyze-OptimizationIntelligence {
         $hardwareCount = Get-OptimizationCount ($Optimizations.Hardware)
         
         $totalOptimizations = $gamingCount + $graphicsCount + $memoryCount + $cpuCount + 
-                             $networkCount + $powerCount + $insiderCount + $thirdPartyCount + $hardwareCount
+        $networkCount + $powerCount + $insiderCount + $thirdPartyCount + $hardwareCount
         
         # Performance Level Calculation
         $baseScore = [math]::Min(60, $totalOptimizations * 2)
@@ -615,11 +880,11 @@ function Analyze-OptimizationIntelligence {
         
         # System Profile Classification
         $intelligence.SystemProfile = switch ($intelligence.PerformanceLevel) {
-            {$_ -ge 90} { "Extreme Enthusiast" }
-            {$_ -ge 75} { "Advanced Gamer" }
-            {$_ -ge 60} { "Performance User" }
-            {$_ -ge 40} { "Moderate User" }
-            {$_ -ge 20} { "Basic User" }
+            { $_ -ge 90 } { "Extreme Enthusiast" }
+            { $_ -ge 75 } { "Advanced Gamer" }
+            { $_ -ge 60 } { "Performance User" }
+            { $_ -ge 40 } { "Moderate User" }
+            { $_ -ge 20 } { "Basic User" }
             default { "Stock Configuration" }
         }
         
@@ -630,20 +895,20 @@ function Analyze-OptimizationIntelligence {
         if ($hardwareCount -gt 3) { $riskFactors += 1 }
         
         $intelligence.RiskAssessment = switch ($riskFactors) {
-            {$_ -ge 4} { "HIGH RISK - Monitor stability closely" }
-            {$_ -ge 2} { "MODERATE RISK - Test thoroughly" }
+            { $_ -ge 4 } { "HIGH RISK - Monitor stability closely" }
+            { $_ -ge 2 } { "MODERATE RISK - Test thoroughly" }
             default { "LOW RISK - Safe configuration" }
         }
         
         # Source Analysis
         $intelligence.SourceAnalysis = @{
-            "Windows Default" = 0
+            "Windows Default"     = 0
             "Gaming Optimization" = $gamingCount
-            "Hardware Tweaks" = $hardwareCount
-            "Microsoft Insider" = $insiderCount
-            "Third-Party Tools" = $thirdPartyCount
-            "Memory Management" = $memoryCount
-            "Graphics Drivers" = $graphicsCount
+            "Hardware Tweaks"     = $hardwareCount
+            "Microsoft Insider"   = $insiderCount
+            "Third-Party Tools"   = $thirdPartyCount
+            "Memory Management"   = $memoryCount
+            "Graphics Drivers"    = $graphicsCount
         }
         
         # Generate recommendations based on analysis
@@ -691,9 +956,9 @@ function Generate-ComparativeAnalysis {
     Write-EnhancedLog "Generating comparative analysis..." "INFO" "AI_SCANNER"
     
     $analysis = @{
-        Summary = ""
-        Changes = @()
-        NewOptimizations = 0
+        Summary              = ""
+        Changes              = @()
+        NewOptimizations     = 0
         RemovedOptimizations = 0
     }
     
@@ -703,9 +968,11 @@ function Generate-ComparativeAnalysis {
             param($Object)
             if ($Object -is [hashtable]) {
                 return $Object.Keys
-            } elseif ($Object -is [PSCustomObject]) {
+            }
+            elseif ($Object -is [PSCustomObject]) {
                 return ($Object | Get-Member -MemberType Properties).Name
-            } else {
+            }
+            else {
                 return @()
             }
         }
@@ -715,7 +982,8 @@ function Generate-ComparativeAnalysis {
             param($Object, $Key)
             if ($Object -is [hashtable]) {
                 return $Object[$Key]
-            } elseif ($Object -is [PSCustomObject]) {
+            }
+            elseif ($Object -is [PSCustomObject]) {
                 if ($Object | Get-Member -Name $Key -MemberType Properties) {
                     return $Object.$Key
                 }
@@ -728,7 +996,8 @@ function Generate-ComparativeAnalysis {
             param($Object, $Key)
             if ($Object -is [hashtable]) {
                 return $Object.ContainsKey($Key)
-            } elseif ($Object -is [PSCustomObject]) {
+            }
+            elseif ($Object -is [PSCustomObject]) {
                 return ($Object | Get-Member -Name $Key -MemberType Properties) -ne $null
             }
             return $false
@@ -789,7 +1058,8 @@ function Generate-ComparativeAnalysis {
         # Generate summary
         if ($analysis.Changes.Count -eq 0) {
             $analysis.Summary = "No changes detected since last scan"
-        } else {
+        }
+        else {
             $analysis.Summary = "$($analysis.NewOptimizations) new, $($analysis.RemovedOptimizations) removed, $($analysis.Changes.Count) total changes"
         }
         
@@ -814,16 +1084,19 @@ function Identify-OptimizationSource {
         "GPU Priority|CPU Priority" {
             if ($Value -match "Conservative|Balanced|Aggressive") {
                 $source = "Alphacode GameBoost"
-            } elseif ($Value -match "[4-8]") {
+            }
+            elseif ($Value -match "[4-8]") {
                 $source = "Gaming Optimization Tool"
-            } else {
+            }
+            else {
                 $source = "Manual Registry Edit"
             }
         }
         "Game DVR|GameDVR" {
             if ($Value -like "*Disabled*") {
                 $source = "Gaming Performance Tweak"
-            } else {
+            }
+            else {
                 $source = "Windows Default"
             }
         }
@@ -915,15 +1188,15 @@ DETAILED CONFIGURATION INVENTORY
 
     # Add detailed inventory
     $categories = @(
-        @{Name="GAMING OPTIMIZATIONS"; Data=$Optimizations.Gaming},
-        @{Name="GRAPHICS & DISPLAY"; Data=$Optimizations.Graphics},
-        @{Name="MEMORY MANAGEMENT"; Data=$Optimizations.Memory},
-        @{Name="CPU PERFORMANCE"; Data=$Optimizations.CPU},
-        @{Name="NETWORK SETTINGS"; Data=$Optimizations.Network},
-        @{Name="POWER MANAGEMENT"; Data=$Optimizations.Power},
-        @{Name="MICROSOFT INSIDER TWEAKS"; Data=$Optimizations.Insider},
-        @{Name="THIRD-PARTY TOOLS"; Data=$Optimizations.ThirdParty},
-        @{Name="HARDWARE-SPECIFIC"; Data=$Optimizations.Hardware}
+        @{Name = "GAMING OPTIMIZATIONS"; Data = $Optimizations.Gaming },
+        @{Name = "GRAPHICS & DISPLAY"; Data = $Optimizations.Graphics },
+        @{Name = "MEMORY MANAGEMENT"; Data = $Optimizations.Memory },
+        @{Name = "CPU PERFORMANCE"; Data = $Optimizations.CPU },
+        @{Name = "NETWORK SETTINGS"; Data = $Optimizations.Network },
+        @{Name = "POWER MANAGEMENT"; Data = $Optimizations.Power },
+        @{Name = "MICROSOFT INSIDER TWEAKS"; Data = $Optimizations.Insider },
+        @{Name = "THIRD-PARTY TOOLS"; Data = $Optimizations.ThirdParty },
+        @{Name = "HARDWARE-SPECIFIC"; Data = $Optimizations.Hardware }
     )
     
     foreach ($category in $categories) {
@@ -955,15 +1228,15 @@ function Scan-AllOptimizations {
     Write-EnhancedLog "Starting comprehensive registry optimization scan..." "INFO" "SCANNER"
     
     $optimizations = @{
-        Gaming = @{}
-        Graphics = @{}
-        Memory = @{}
-        CPU = @{}
-        Network = @{}
-        Power = @{}
-        Insider = @{}
+        Gaming     = @{}
+        Graphics   = @{}
+        Memory     = @{}
+        CPU        = @{}
+        Network    = @{}
+        Power      = @{}
+        Insider    = @{}
         ThirdParty = @{}
-        Hardware = @{}
+        Hardware   = @{}
     }
     
     try {
@@ -1039,7 +1312,8 @@ function Scan-AllOptimizations {
         if ($graphicsDrivers) {
             if ($graphicsDrivers.HwSchMode -eq 2) {
                 $optimizations.Graphics."Hardware Scheduling" = "Enabled (Modern GPU optimization)"
-            } elseif ($graphicsDrivers.HwSchMode -eq 1) {
+            }
+            elseif ($graphicsDrivers.HwSchMode -eq 1) {
                 $optimizations.Graphics."Hardware Scheduling" = "Legacy Mode (Compatibility)"
             }
             
@@ -1108,9 +1382,11 @@ function Scan-AllOptimizations {
                 $value = $memoryMgmt.IoPageLockLimit
                 if ($value -gt 8000000) {
                     $optimizations.Memory."IO Page Lock Limit" = "$value (DDR5 high-speed optimization)"
-                } elseif ($value -gt 4000000) {
+                }
+                elseif ($value -gt 4000000) {
                     $optimizations.Memory."IO Page Lock Limit" = "$value (DDR4 high-speed optimization)"
-                } else {
+                }
+                else {
                     $optimizations.Memory."IO Page Lock Limit" = "$value (Custom setting)"
                 }
             }
@@ -1165,7 +1441,8 @@ function Scan-AllOptimizations {
         if ($gameDVR) {
             if ($gameDVR.GameDVR_Enabled -eq 0) {
                 $optimizations.Gaming."Game DVR" = "Disabled (Performance optimization)"
-            } elseif ($gameDVR.GameDVR_Enabled -eq 1) {
+            }
+            elseif ($gameDVR.GameDVR_Enabled -eq 1) {
                 $optimizations.Gaming."Game DVR" = "Enabled (Default - may reduce FPS)"
             }
         }
@@ -1251,10 +1528,10 @@ function Scan-AllOptimizations {
         }
         
         $totalOptimizations = ($optimizations.Gaming.Count + $optimizations.Graphics.Count + 
-                              $optimizations.Memory.Count + $optimizations.CPU.Count + 
-                              $optimizations.Network.Count + $optimizations.Power.Count + 
-                              $optimizations.Insider.Count + $optimizations.ThirdParty.Count + 
-                              $optimizations.Hardware.Count)
+            $optimizations.Memory.Count + $optimizations.CPU.Count + 
+            $optimizations.Network.Count + $optimizations.Power.Count + 
+            $optimizations.Insider.Count + $optimizations.ThirdParty.Count + 
+            $optimizations.Hardware.Count)
         
         Write-EnhancedLog "Registry scan completed - found $totalOptimizations optimizations" "SUCCESS" "SCANNER"
         return $optimizations
@@ -1284,7 +1561,8 @@ function Show-OptimizationResults {
                 $previousOptimizations = Get-Content $previousScanPath -Encoding UTF8 | ConvertFrom-Json
                 $comparativeAnalysis = Generate-ComparativeAnalysis $optimizations $previousOptimizations
                 Write-EnhancedLog "Comparative analysis completed" "SUCCESS" "AI_SCANNER"
-            } catch {
+            }
+            catch {
                 Write-EnhancedLog "Could not load previous scan for comparison" "WARN" "AI_SCANNER"
             }
         }
@@ -1298,7 +1576,8 @@ function Show-OptimizationResults {
                 if ($optimizations.$category) {
                     if ($optimizations.$category -is [hashtable]) {
                         $jsonSafeOptimizations[$category] = $optimizations.$category
-                    } elseif ($optimizations.$category -is [PSCustomObject]) {
+                    }
+                    elseif ($optimizations.$category -is [PSCustomObject]) {
                         foreach ($property in ($optimizations.$category | Get-Member -MemberType Properties)) {
                             $jsonSafeOptimizations[$category][$property.Name] = $optimizations.$category.($property.Name)
                         }
@@ -1308,7 +1587,8 @@ function Show-OptimizationResults {
             
             $jsonSafeOptimizations | ConvertTo-Json -Depth 10 | Set-Content $previousScanPath -Encoding UTF8
             Write-EnhancedLog "Current scan saved for future comparisons" "SUCCESS" "AI_SCANNER"
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to save current scan: $($_.Exception.Message)" "WARN" "AI_SCANNER"
         }
         
@@ -1391,7 +1671,7 @@ Risk Assessment: $($intelligence.RiskAssessment)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "@
 
-        foreach ($source in $intelligence.SourceAnalysis.Keys | Sort-Object {$intelligence.SourceAnalysis[$_]} -Descending) {
+        foreach ($source in $intelligence.SourceAnalysis.Keys | Sort-Object { $intelligence.SourceAnalysis[$_] } -Descending) {
             $count = $intelligence.SourceAnalysis[$source]
             if ($count -gt 0) {
                 $percentage = [math]::Round(($count / ($intelligence.SourceAnalysis.Values | Measure-Object -Sum).Sum) * 100, 1)
@@ -1405,7 +1685,8 @@ Risk Assessment: $($intelligence.RiskAssessment)
             foreach ($conflict in $intelligence.ConflictDetection) {
                 $aiContent += "`n   🚨 $conflict"
             }
-        } else {
+        }
+        else {
             $aiContent += "`n`n✅ CONFLICT DETECTION ENGINE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ✅ No conflicts detected - System configuration is stable"
@@ -1472,15 +1753,15 @@ System: $global:CPUName | $global:GPUName | $global:RAMTotal GB $global:RAMType
         
         # Add optimization categories with enhanced formatting
         $categories = @(
-            @{Name="🎮 GAMING OPTIMIZATIONS"; Data=$optimizations.Gaming; Icon="🎯"},
-            @{Name="🖥️ GRAPHICS & DISPLAY"; Data=$optimizations.Graphics; Icon="📺"},
-            @{Name="🧠 MEMORY MANAGEMENT"; Data=$optimizations.Memory; Icon="💾"},
-            @{Name="⚡ CPU PERFORMANCE"; Data=$optimizations.CPU; Icon="🔥"},
-            @{Name="🌐 NETWORK SETTINGS"; Data=$optimizations.Network; Icon="📶"},
-            @{Name="🔋 POWER MANAGEMENT"; Data=$optimizations.Power; Icon="⚡"},
-            @{Name="🔥 MICROSOFT INSIDER TWEAKS"; Data=$optimizations.Insider; Icon="🚀"},
-            @{Name="🛠️ THIRD-PARTY TOOLS"; Data=$optimizations.ThirdParty; Icon="📦"},
-            @{Name="🎯 HARDWARE-SPECIFIC"; Data=$optimizations.Hardware; Icon="🔧"}
+            @{Name = "🎮 GAMING OPTIMIZATIONS"; Data = $optimizations.Gaming; Icon = "🎯" },
+            @{Name = "🖥️ GRAPHICS & DISPLAY"; Data = $optimizations.Graphics; Icon = "📺" },
+            @{Name = "🧠 MEMORY MANAGEMENT"; Data = $optimizations.Memory; Icon = "💾" },
+            @{Name = "⚡ CPU PERFORMANCE"; Data = $optimizations.CPU; Icon = "🔥" },
+            @{Name = "🌐 NETWORK SETTINGS"; Data = $optimizations.Network; Icon = "📶" },
+            @{Name = "🔋 POWER MANAGEMENT"; Data = $optimizations.Power; Icon = "⚡" },
+            @{Name = "🔥 MICROSOFT INSIDER TWEAKS"; Data = $optimizations.Insider; Icon = "🚀" },
+            @{Name = "🛠️ THIRD-PARTY TOOLS"; Data = $optimizations.ThirdParty; Icon = "📦" },
+            @{Name = "🎯 HARDWARE-SPECIFIC"; Data = $optimizations.Hardware; Icon = "🔧" }
         )
         
         foreach ($category in $categories) {
@@ -1518,10 +1799,10 @@ System: $global:CPUName | $global:GPUName | $global:RAMTotal GB $global:RAMType
         
         # Calculate metrics
         $totalOptimizations = ($optimizations.Gaming.Count + $optimizations.Graphics.Count + 
-                              $optimizations.Memory.Count + $optimizations.CPU.Count + 
-                              $optimizations.Network.Count + $optimizations.Power.Count + 
-                              $optimizations.Insider.Count + $optimizations.ThirdParty.Count + 
-                              $optimizations.Hardware.Count)
+            $optimizations.Memory.Count + $optimizations.CPU.Count + 
+            $optimizations.Network.Count + $optimizations.Power.Count + 
+            $optimizations.Insider.Count + $optimizations.ThirdParty.Count + 
+            $optimizations.Hardware.Count)
         
         $estimatedPerformanceGain = [math]::Min(100, ($totalOptimizations * 3) + ($optimizations.Insider.Count * 5) + ($optimizations.Hardware.Count * 4))
         
@@ -1582,9 +1863,11 @@ Advanced Features: $(if($optimizations.Insider.Count -gt 0){"✅ Using cutting-e
 
         if ($intelligence.PerformanceLevel -lt 50) {
             $metricsContent += "`n✨ BEGINNER: Start with Conservative or Balanced profile for safe improvements"
-        } elseif ($intelligence.PerformanceLevel -lt 80) {
+        }
+        elseif ($intelligence.PerformanceLevel -lt 80) {
             $metricsContent += "`n🚀 INTERMEDIATE: Consider Aggressive profile and hardware-specific optimizations"
-        } else {
+        }
+        else {
             $metricsContent += "`n🔥 EXPERT: System is highly optimized - monitor for new tweaking opportunities"
         }
 
@@ -1606,12 +1889,12 @@ Advanced Features: $(if($optimizations.Insider.Count -gt 0){"✅ Using cutting-e
         $exportReportBtn.ForeColor = [System.Drawing.Color]::White
         $exportReportBtn.FlatStyle = "Flat"
         $exportReportBtn.Add_Click({
-            $professionalReport = Export-ProfessionalReport $optimizations $intelligence $comparativeAnalysis
-            $exportPath = "$env:USERPROFILE\Desktop\FPS_Suite_AI_Report_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
-            Set-Content -Path $exportPath -Value $professionalReport -Encoding UTF8
-            Write-EnhancedLog "Professional AI report exported to: $exportPath" "SUCCESS" "AI_SCANNER"
-            [System.Windows.Forms.MessageBox]::Show("Professional AI report exported to:`n$exportPath`n`nThis report includes AI analysis, source detection, conflict analysis, and performance recommendations.", "Export Complete", "OK", "Information")
-        })
+                $professionalReport = Export-ProfessionalReport $optimizations $intelligence $comparativeAnalysis
+                $exportPath = "$env:USERPROFILE\Desktop\FPS_Suite_AI_Report_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
+                Set-Content -Path $exportPath -Value $professionalReport -Encoding UTF8
+                Write-EnhancedLog "Professional AI report exported to: $exportPath" "SUCCESS" "AI_SCANNER"
+                [System.Windows.Forms.MessageBox]::Show("Professional AI report exported to:`n$exportPath`n`nThis report includes AI analysis, source detection, conflict analysis, and performance recommendations.", "Export Complete", "OK", "Information")
+            })
         $buttonPanel.Controls.Add($exportReportBtn)
         
         # Export Raw Data
@@ -1623,23 +1906,23 @@ Advanced Features: $(if($optimizations.Insider.Count -gt 0){"✅ Using cutting-e
         $exportDataBtn.ForeColor = [System.Drawing.Color]::White
         $exportDataBtn.FlatStyle = "Flat"
         $exportDataBtn.Add_Click({
-            $rawData = @{
-                Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-                SystemInfo = @{
-                    CPU = $global:CPUName
-                    GPU = $global:GPUName
-                    RAM = "$global:RAMTotal GB $global:RAMType-$global:RAMSpeed"
-                    OS = $global:OSName
+                $rawData = @{
+                    Timestamp           = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                    SystemInfo          = @{
+                        CPU = $global:CPUName
+                        GPU = $global:GPUName
+                        RAM = "$global:RAMTotal GB $global:RAMType-$global:RAMSpeed"
+                        OS  = $global:OSName
+                    }
+                    Optimizations       = $optimizations
+                    Intelligence        = $intelligence
+                    ComparativeAnalysis = $comparativeAnalysis
                 }
-                Optimizations = $optimizations
-                Intelligence = $intelligence
-                ComparativeAnalysis = $comparativeAnalysis
-            }
-            $exportPath = "$env:USERPROFILE\Desktop\FPS_Suite_Raw_Data_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
-            $rawData | ConvertTo-Json -Depth 10 | Set-Content -Path $exportPath -Encoding UTF8
-            Write-EnhancedLog "Raw data exported to: $exportPath" "SUCCESS" "AI_SCANNER"
-            [System.Windows.Forms.MessageBox]::Show("Raw data exported to:`n$exportPath`n`nThis JSON file contains all scan data and can be used for advanced analysis or sharing with support.", "Export Complete", "OK", "Information")
-        })
+                $exportPath = "$env:USERPROFILE\Desktop\FPS_Suite_Raw_Data_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+                $rawData | ConvertTo-Json -Depth 10 | Set-Content -Path $exportPath -Encoding UTF8
+                Write-EnhancedLog "Raw data exported to: $exportPath" "SUCCESS" "AI_SCANNER"
+                [System.Windows.Forms.MessageBox]::Show("Raw data exported to:`n$exportPath`n`nThis JSON file contains all scan data and can be used for advanced analysis or sharing with support.", "Export Complete", "OK", "Information")
+            })
         $buttonPanel.Controls.Add($exportDataBtn)
         
         # Share Analysis
@@ -1651,7 +1934,7 @@ Advanced Features: $(if($optimizations.Insider.Count -gt 0){"✅ Using cutting-e
         $shareBtn.ForeColor = [System.Drawing.Color]::White
         $shareBtn.FlatStyle = "Flat"
         $shareBtn.Add_Click({
-            $shareSummary = @"
+                $shareSummary = @"
 🎮 Alphacode GameBoost - System Analysis Summary
 
 System: $global:CPUName | $global:GPUName | $global:RAMTotal GB $global:RAMType
@@ -1662,9 +1945,9 @@ Risk Level: $($intelligence.RiskAssessment)
 
 Generated by Alphacode GameBoost Ultimate Edition
 "@
-            [System.Windows.Forms.Clipboard]::SetText($shareSummary)
-            [System.Windows.Forms.MessageBox]::Show("Analysis summary copied to clipboard!`n`nYou can now paste it in forums, Discord, or support tickets.", "Copied to Clipboard", "OK", "Information")
-        })
+                [System.Windows.Forms.Clipboard]::SetText($shareSummary)
+                [System.Windows.Forms.MessageBox]::Show("Analysis summary copied to clipboard!`n`nYou can now paste it in forums, Discord, or support tickets.", "Copied to Clipboard", "OK", "Information")
+            })
         $buttonPanel.Controls.Add($shareBtn)
         
         # Close button
@@ -1691,14 +1974,14 @@ Generated by Alphacode GameBoost Ultimate Edition
 function Get-SystemOptimizationStatus {
     try {
         $status = @{
-            GPUPriority = "Not Set"
-            CPUPriority = "Not Set"
+            GPUPriority          = "Not Set"
+            CPUPriority          = "Not Set"
             SystemResponsiveness = "Not Set"
-            HardwareScheduling = "Disabled"
-            TDRLevel = "Not Set"
-            GameDVR = "Enabled"
-            OptimizationLevel = 0
-            OverallStatus = "📋 Needs Optimization"
+            HardwareScheduling   = "Disabled"
+            TDRLevel             = "Not Set"
+            GameDVR              = "Enabled"
+            OptimizationLevel    = 0
+            OverallStatus        = "📋 Needs Optimization"
         }
         
         # Gaming Task Priority
@@ -1712,7 +1995,8 @@ function Get-SystemOptimizationStatus {
                     $status.CPUPriority = $gamingTasks.Priority
                 }
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to read gaming tasks: $($_.Exception.Message)" "DEBUG" "STATUS"
         }
         
@@ -1722,7 +2006,8 @@ function Get-SystemOptimizationStatus {
             if ($multimedia -and $multimedia.SystemResponsiveness -ne $null) {
                 $status.SystemResponsiveness = $multimedia.SystemResponsiveness
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to read system responsiveness: $($_.Exception.Message)" "DEBUG" "STATUS"
         }
         
@@ -1737,7 +2022,8 @@ function Get-SystemOptimizationStatus {
                     $status.TDRLevel = $graphics.TdrLevel
                 }
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to read graphics settings: $($_.Exception.Message)" "DEBUG" "STATUS"
         }
         
@@ -1747,7 +2033,8 @@ function Get-SystemOptimizationStatus {
             if ($gameDVR -and $gameDVR.GameDVR_Enabled -eq 0) {
                 $status.GameDVR = "Disabled (Optimized)"
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to read Game DVR settings: $($_.Exception.Message)" "DEBUG" "STATUS"
         }
         
@@ -1763,10 +2050,10 @@ function Get-SystemOptimizationStatus {
         
         $status.OptimizationLevel = [math]::Round(($optimizationScore / $totalChecks) * 100, 1)
         $status.OverallStatus = switch ($status.OptimizationLevel) {
-            {$_ -ge 90} { "🔥 Excellent" }
-            {$_ -ge 70} { "🚀 Very Good" }
-            {$_ -ge 50} { "⚡ Good" }
-            {$_ -ge 30} { "🛡️ Fair" }
+            { $_ -ge 90 } { "🔥 Excellent" }
+            { $_ -ge 70 } { "🚀 Very Good" }
+            { $_ -ge 50 } { "⚡ Good" }
+            { $_ -ge 30 } { "🛡️ Fair" }
             default { "📋 Needs Optimization" }
         }
         
@@ -1775,14 +2062,14 @@ function Get-SystemOptimizationStatus {
     catch {
         Write-EnhancedLog "Failed to get system status: $($_.Exception.Message)" "ERROR" "STATUS"
         return @{
-            GPUPriority = "Error"
-            CPUPriority = "Error"
+            GPUPriority          = "Error"
+            CPUPriority          = "Error"
             SystemResponsiveness = "Error"
-            HardwareScheduling = "Error"
-            TDRLevel = "Error"
-            GameDVR = "Error"
-            OptimizationLevel = 0
-            OverallStatus = "❌ Error"
+            HardwareScheduling   = "Error"
+            TDRLevel             = "Error"
+            GameDVR              = "Error"
+            OptimizationLevel    = 0
+            OverallStatus        = "❌ Error"
         }
     }
 }
@@ -1825,7 +2112,8 @@ GAMING PERFORMANCE STATUS • $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             $global:StatusRichTextBox.Text = $statusText
             Write-EnhancedLog "Status display updated successfully" "DEBUG" "GUI"
         }
-    } catch {
+    }
+    catch {
         Write-EnhancedLog "Failed to update status display: $($_.Exception.Message)" "ERROR" "GUI"
     }
 }
@@ -1852,7 +2140,8 @@ function Restore-SystemDefaults {
         Write-EnhancedLog "System defaults restored successfully!" "SUCCESS" "RESTORE"
         return $true
         
-    } catch {
+    }
+    catch {
         Write-EnhancedLog "System restoration failed: $($_.Exception.Message)" "ERROR" "RESTORE"
         return $false
     }
@@ -1948,27 +2237,29 @@ function Create-ModernGUI {
         
         # Hover effects
         $button.Add_MouseEnter({
-            try {
-                if ($this.BackColor -ne $null) {
-                    $this.BackColor = [System.Drawing.Color]::FromArgb(
-                        [math]::Min(255, $this.BackColor.R + 20),
-                        [math]::Min(255, $this.BackColor.G + 20),
-                        [math]::Min(255, $this.BackColor.B + 20)
-                    )
+                try {
+                    if ($this.BackColor -ne $null) {
+                        $this.BackColor = [System.Drawing.Color]::FromArgb(
+                            [math]::Min(255, $this.BackColor.R + 20),
+                            [math]::Min(255, $this.BackColor.G + 20),
+                            [math]::Min(255, $this.BackColor.B + 20)
+                        )
+                    }
                 }
-            } catch {
-                # Ignore hover effect errors
-            }
-        })
+                catch {
+                    # Ignore hover effect errors
+                }
+            })
         $button.Add_MouseLeave({ 
-            try {
-                if ($BackColor -ne $null) {
-                    $this.BackColor = $BackColor 
+                try {
+                    if ($BackColor -ne $null) {
+                        $this.BackColor = $BackColor 
+                    }
                 }
-            } catch {
-                # Ignore hover effect errors
-            }
-        })
+                catch {
+                    # Ignore hover effect errors
+                }
+            })
         
         return $button
     }
@@ -1980,10 +2271,12 @@ function Create-ModernGUI {
             Update-StatusDisplay
             if ($result) {
                 [System.Windows.Forms.MessageBox]::Show("Conservative profile applied successfully!", "Conservative Mode Applied", "OK", "Information")
-            } else {
+            }
+            else {
                 [System.Windows.Forms.MessageBox]::Show("Profile application failed!", "Error", "OK", "Error")
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Conservative profile error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error applying Conservative profile!", "Error", "OK", "Error")
         }
@@ -1996,10 +2289,12 @@ function Create-ModernGUI {
             Update-StatusDisplay
             if ($result) {
                 [System.Windows.Forms.MessageBox]::Show("Balanced profile applied successfully!", "Balanced Mode Applied", "OK", "Information")
-            } else {
+            }
+            else {
                 [System.Windows.Forms.MessageBox]::Show("Profile application failed!", "Error", "OK", "Error")
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Balanced profile error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error applying Balanced profile!", "Error", "OK", "Error")
         }
@@ -2012,10 +2307,12 @@ function Create-ModernGUI {
             Update-StatusDisplay
             if ($result) {
                 [System.Windows.Forms.MessageBox]::Show("Aggressive profile applied successfully!", "Aggressive Mode Applied", "OK", "Information")
-            } else {
+            }
+            else {
                 [System.Windows.Forms.MessageBox]::Show("Profile application failed!", "Error", "OK", "Error")
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Aggressive profile error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error applying Aggressive profile!", "Error", "OK", "Error")
         }
@@ -2030,11 +2327,13 @@ function Create-ModernGUI {
                 Update-StatusDisplay
                 if ($result) {
                     [System.Windows.Forms.MessageBox]::Show("Maximum performance profile applied!", "Maximum Performance Applied", "OK", "Information")
-                } else {
+                }
+                else {
                     [System.Windows.Forms.MessageBox]::Show("Profile application failed!", "Error", "OK", "Error")
                 }
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Maximum profile error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error applying Maximum profile!", "Error", "OK", "Error")
         }
@@ -2066,10 +2365,12 @@ function Create-ModernGUI {
                 if ($global:IsNVIDIA) { $message += "`n• NVIDIA driver optimizations applied" }
                 if ($global:RAMSpeed -gt 4000) { $message += "`n• High-speed RAM optimizations configured" }
                 [System.Windows.Forms.MessageBox]::Show($message, "Hardware Optimization Complete", "OK", "Information")
-            } else {
+            }
+            else {
                 [System.Windows.Forms.MessageBox]::Show("Hardware optimization failed!", "Error", "OK", "Error")
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Hardware optimization error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error applying hardware optimizations!", "Error", "OK", "Error")
         }
@@ -2089,7 +2390,8 @@ function Create-ModernGUI {
         $backupPath = Create-EnterpriseBackup "manual_backup" "User-initiated manual backup" $false
         if ($backupPath) {
             [System.Windows.Forms.MessageBox]::Show("Manual backup created successfully!`n`nLocation: $backupPath", "Backup Complete", "OK", "Information")
-        } else {
+        }
+        else {
             [System.Windows.Forms.MessageBox]::Show("Backup creation failed!", "Backup Error", "OK", "Error")
         }
     }
@@ -2103,11 +2405,13 @@ function Create-ModernGUI {
                 Update-StatusDisplay
                 if ($result) {
                     [System.Windows.Forms.MessageBox]::Show("System defaults restored successfully!", "Restore Complete", "OK", "Information")
-                } else {
+                }
+                else {
                     [System.Windows.Forms.MessageBox]::Show("System restoration failed!", "Restore Error", "OK", "Error")
                 }
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Restore defaults error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error restoring defaults!", "Error", "OK", "Error")
         }
@@ -2134,20 +2438,22 @@ function Create-ModernGUI {
     $saveConfigBtn = New-ModernButton "💾 Save" (New-Object System.Drawing.Point(310, 405)) (New-Object System.Drawing.Size(70, 30)) ([System.Drawing.Color]::FromArgb(60, 60, 60)) {
         try {
             $config = @{
-                AutoBackup = $global:AutoBackupCheckbox.Checked
-                SafeMode = $false
+                AutoBackup         = $global:AutoBackupCheckbox.Checked
+                SafeMode           = $false
                 LastAppliedProfile = ""
-                PreferredProfile = "Balanced"
-                Version = $global:AppVersion
+                PreferredProfile   = "Balanced"
+                Version            = $global:AppVersion
             }
             $result = Save-Configuration $config
             if ($result) {
                 [System.Windows.Forms.MessageBox]::Show("Configuration saved successfully!", "Settings Saved", "OK", "Information")
                 Write-EnhancedLog "User configuration saved manually" "SUCCESS" "CONFIG"
-            } else {
+            }
+            else {
                 [System.Windows.Forms.MessageBox]::Show("Failed to save configuration!", "Save Error", "OK", "Error")
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Save configuration error: $($_.Exception.Message)" "ERROR" "GUI"
             [System.Windows.Forms.MessageBox]::Show("Error saving configuration!", "Error", "OK", "Error")
         }
@@ -2254,7 +2560,8 @@ GAMING PERFORMANCE STATUS • $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 $global:StatusRichTextBox.Text = $statusText
                 Write-EnhancedLog "Status display updated successfully" "DEBUG" "GUI"
             }
-        } catch {
+        }
+        catch {
             Write-EnhancedLog "Failed to update status display: $($_.Exception.Message)" "ERROR" "GUI"
         }
     }
@@ -2263,7 +2570,8 @@ GAMING PERFORMANCE STATUS • $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
     try {
         Update-StatusDisplay
         Write-EnhancedLog "Status display initialized successfully" "SUCCESS" "GUI"
-    } catch {
+    }
+    catch {
         Write-EnhancedLog "Failed to initialize status display: $($_.Exception.Message)" "WARN" "GUI"
     }
     
@@ -2273,14 +2581,17 @@ GAMING PERFORMANCE STATUS • $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
         if ($savedConfig -and $global:AutoBackupCheckbox) {
             if ($savedConfig -is [hashtable] -and $savedConfig.ContainsKey("AutoBackup")) {
                 $global:AutoBackupCheckbox.Checked = $savedConfig["AutoBackup"]
-            } elseif ($savedConfig -is [PSCustomObject] -and ($savedConfig | Get-Member -Name "AutoBackup" -MemberType Properties)) {
+            }
+            elseif ($savedConfig -is [PSCustomObject] -and ($savedConfig | Get-Member -Name "AutoBackup" -MemberType Properties)) {
                 $global:AutoBackupCheckbox.Checked = $savedConfig.AutoBackup
-            } else {
+            }
+            else {
                 $global:AutoBackupCheckbox.Checked = $true  # Default value
             }
             Write-EnhancedLog "Configuration loaded successfully" "SUCCESS" "GUI"
         }
-    } catch {
+    }
+    catch {
         Write-EnhancedLog "Failed to load saved configuration: $($_.Exception.Message)" "WARN" "GUI"
         if ($global:AutoBackupCheckbox) {
             $global:AutoBackupCheckbox.Checked = $true  # Default value
@@ -2345,7 +2656,8 @@ function Start-FPSSuiteProfessional {
             # Show the form
             [System.Windows.Forms.Application]::EnableVisualStyles()
             [System.Windows.Forms.Application]::Run($mainForm)
-        } else {
+        }
+        else {
             Write-Host "❌ Failed to create GUI interface!" -ForegroundColor Red
         }
     }

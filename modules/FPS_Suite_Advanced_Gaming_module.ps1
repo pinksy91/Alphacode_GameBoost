@@ -527,12 +527,23 @@ function Enable-BackgroundProcessKiller {
             } catch {}
         }
         
-        # Disable Windows Defender real-time protection for maximum performance
-        # WARNING: This reduces security - only for dedicated gaming machines
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Value 1 -Type DWord -ErrorAction SilentlyContinue
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 1 -Type DWord -ErrorAction SilentlyContinue
+        # ===== WINDOWS DEFENDER OPTIMIZATION REMOVED FOR SECURITY =====
+        # The following dangerous tweaks have been REMOVED in v3.2.0 for security compliance:
+        # - DisableRealtimeMonitoring
+        # - DisableAntiSpyware
+        #
+        # These modifications exposed systems to malware and violated corporate security policies.
+        # If you need to disable Windows Defender for performance testing:
+        # 1. Do it manually via Windows Security settings
+        # 2. Understand the security risks
+        # 3. Re-enable it immediately after testing
+        #
+        # For more info, see: SECURITY.md
         
-        # Disable Windows Update automatic restart
+        Write-EnhancedLog "Windows Defender tweaks removed for security compliance" "INFO" "BG_KILLER"
+        Write-EnhancedLog "Manually configure Windows Security if needed (not recommended)" "WARN" "BG_KILLER"
+        
+        # Windows Update automatic restart disable (SAFE - kept)
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Value 1 -Type DWord -ErrorAction SilentlyContinue
         
         # Process priority optimization

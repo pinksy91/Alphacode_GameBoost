@@ -1,0 +1,234 @@
+[
+    {
+        "Name": "Counter-Strike 2",
+        "ProcessName": "cs2.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "Valve's competitive FPS - requires low latency"
+    },
+    {
+        "Name": "Valorant",
+        "ProcessName": "VALORANT-Win64-Shipping.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "Riot's tactical shooter"
+    },
+    {
+        "Name": "League of Legends",
+        "ProcessName": "League of Legends.exe",
+        "Category": "MOBA",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal",
+        "Description": "Riot's MOBA title"
+    },
+    {
+        "Name": "Dota 2",
+        "ProcessName": "dota2.exe",
+        "Category": "MOBA",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal",
+        "Description": "Valve's MOBA"
+    },
+    {
+        "Name": "Cyberpunk 2077",
+        "ProcessName": "Cyberpunk2077.exe",
+        "Category": "AAA_OpenWorld",
+        "OptimalProfile": "Maximum",
+        "Priority": "Normal",
+        "Description": "CD Projekt RED's RPG"
+    },
+    {
+        "Name": "Elden Ring",
+        "ProcessName": "eldenring.exe",
+        "Category": "AAA_Action",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal",
+        "Description": "FromSoftware's action RPG"
+    },
+    {
+        "Name": "Fortnite",
+        "ProcessName": "FortniteClient-Win64-Shipping.exe",
+        "Category": "Battle_Royale",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal",
+        "Description": "Epic Games' battle royale"
+    },
+    {
+        "Name": "Apex Legends",
+        "ProcessName": "r5apex.exe",
+        "Category": "Battle_Royale",
+        "OptimalProfile": "Aggressive",
+        "Priority": "High",
+        "Description": "Respawn's battle royale FPS"
+    },
+    {
+        "Name": "Call of Duty: Warzone",
+        "ProcessName": "cod.exe",
+        "Category": "Battle_Royale",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "Activision's battle royale"
+    },
+    {
+        "Name": "Call of Duty: Modern Warfare",
+        "ProcessName": "ModernWarfare.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High"
+    },
+    {
+        "Name": "Overwatch 2",
+        "ProcessName": "Overwatch.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "Balanced",
+        "Priority": "High",
+        "Description": "Blizzard's team-based FPS"
+    },
+    {
+        "Name": "Rainbow Six Siege",
+        "ProcessName": "RainbowSix.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "Ubisoft's tactical shooter"
+    },
+    {
+        "Name": "Minecraft",
+        "ProcessName": "javaw.exe",
+        "Category": "Sandbox",
+        "OptimalProfile": "Conservative",
+        "Priority": "Normal",
+        "Description": "Mojang's sandbox game"
+    },
+    {
+        "Name": "Minecraft (Bedrock)",
+        "ProcessName": "Minecraft.Windows.exe",
+        "Category": "Sandbox",
+        "OptimalProfile": "Conservative",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "GTA V",
+        "ProcessName": "GTA5.exe",
+        "Category": "AAA_OpenWorld",
+        "OptimalProfile": "Maximum",
+        "Priority": "Normal",
+        "Description": "Rockstar's open-world action"
+    },
+    {
+        "Name": "Red Dead Redemption 2",
+        "ProcessName": "RDR2.exe",
+        "Category": "AAA_OpenWorld",
+        "OptimalProfile": "Maximum",
+        "Priority": "Normal",
+        "Description": "Rockstar's western"
+    },
+    {
+        "Name": "The Witcher 3",
+        "ProcessName": "witcher3.exe",
+        "Category": "AAA_RPG",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "Starfield",
+        "ProcessName": "Starfield.exe",
+        "Category": "AAA_RPG",
+        "OptimalProfile": "Maximum",
+        "Priority": "Normal",
+        "Description": "Bethesda's space RPG"
+    },
+    {
+        "Name": "Baldur's Gate 3",
+        "ProcessName": "bg3.exe",
+        "Category": "AAA_RPG",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal",
+        "Description": "Larian's RPG masterpiece"
+    },
+    {
+        "Name": "Rocket League",
+        "ProcessName": "RocketLeague.exe",
+        "Category": "Competitive_Sports",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "Psyonix's car soccer"
+    },
+    {
+        "Name": "FIFA 24",
+        "ProcessName": "FIFA24.exe",
+        "Category": "Sports",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "NBA 2K24",
+        "ProcessName": "NBA2K24.exe",
+        "Category": "Sports",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "Destiny 2",
+        "ProcessName": "destiny2.exe",
+        "Category": "Looter_Shooter",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal",
+        "Description": "Bungie's looter shooter"
+    },
+    {
+        "Name": "Warframe",
+        "ProcessName": "Warframe.x64.exe",
+        "Category": "Looter_Shooter",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "Path of Exile",
+        "ProcessName": "PathOfExile.exe",
+        "Category": "ARPG",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal",
+        "Description": "Grinding Gear Games' ARPG"
+    },
+    {
+        "Name": "Diablo IV",
+        "ProcessName": "Diablo IV.exe",
+        "Category": "ARPG",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal",
+        "Description": "Blizzard's action RPG"
+    },
+    {
+        "Name": "Halo Infinite",
+        "ProcessName": "HaloInfinite.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "LowLatency",
+        "Priority": "High",
+        "Description": "343's Halo FPS"
+    },
+    {
+        "Name": "Battlefield 2042",
+        "ProcessName": "Battlefield2042.exe",
+        "Category": "Competitive_FPS",
+        "OptimalProfile": "Aggressive",
+        "Priority": "High",
+        "Description": "DICE's large-scale FPS"
+    },
+    {
+        "Name": "Palworld",
+        "ProcessName": "Palworld-Win64-Shipping.exe",
+        "Category": "Survival",
+        "OptimalProfile": "Balanced",
+        "Priority": "Normal"
+    },
+    {
+        "Name": "Rust",
+        "ProcessName": "RustClient.exe",
+        "Category": "Survival",
+        "OptimalProfile": "Aggressive",
+        "Priority": "Normal"
+    }
+]

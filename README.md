@@ -5,14 +5,14 @@
 <h1 align="center">Alphacode GameBoost</h1>
 
 <p align="center">
-  <strong>Ultimate Edition v3.1.0 — Suite di Ottimizzazione Gaming Professionale</strong><br>
-  Ottimizzatore all-in-one per Windows 10/11 — powered by <a href="https://github.com/Alphacode" target="_blank"><strong>Alphacode</strong></a>
+  <strong>Next-Gen Edition v3.3.0 — Gaming Optimizer AI-Powered, 100% Local, Privacy-First</strong><br>
+  Intelligent all-in-one gaming optimizer for Windows 10/11 — powered by <a href="https://github.com/Alphacode" target="_blank"><strong>Alphacode</strong></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/Alphacode"><img src="https://img.shields.io/badge/powered%20by-Alphacode-blue?style=flat-square&logo=github"></a>
   <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows">
-  <img src="https://img.shields.io/badge/version-3.1.0-brightgreen?style=flat-square">
+  <img src="https://img.shields.io/badge/version-3.3.0-brightgreen?style=flat-square">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -46,19 +46,38 @@
 
 ```text
 Alphacode_GameBoost/
-├── assets/
-│   ├── logo.png           # Logo principale
-│   ├── gameboost.png      # Altro logo GameBoost
-│   ├── 1.png              # Dashboard UI
-│   ├── 2.png              # Stato ottimizzazione
-│   ├── 3.png              # AI Scanner
-│   └── 4.png              # Result screen
+├── assets/                # Logo e screenshots
 ├── modules/
 │   ├── FPS_Suite_Advanced_Gaming_module.ps1
 │   └── FPS_Suite_ScanUltimate_AI.ps1
-├── Alphacode_GameBoost.bat        # Launcher principale
-├── README.md                      # Questo file
-└── LICENSE                        # Licenza MIT
+├── src/                   # [NEW v3.3.0] Next-gen modules
+│   ├── detection/
+│   │   └── game-detector.ps1        # Smart game detection
+│   ├── ui/
+│   │   └── tray-integration.ps1     # System tray UI
+│   ├── monitoring/
+│   │   └── performance-monitor.ps1  # WMI performance tracking
+│   ├── scheduler/
+│   │   └── smart-scheduler.ps1      # Pattern learning & suggestions
+│   ├── safety/
+│   │   ├── tweak-registry.ps1       # Tweak classification database
+│   │   ├── user-consent.ps1         # Consent dialogs
+│   │   └── tweak-applicator.ps1     # Safe tweak application
+│   └── orchestrator.ps1             # Unified launcher
+├── data/
+│   └── games.json         # [NEW] 30+ game database
+├── config/
+│   └── app.config.json    # Centralized configuration
+├── tests/
+│   └── unit/
+│       └── core.tests.ps1 # Pester test suite
+├── .github/workflows/
+│   └── test.yml           # CI/CD pipeline
+├── Alphacode_GameBoost.bat
+├── README.md
+├── CHANGELOG.md           # [UPDATED v3.3.0]
+├── SECURITY.md
+└── LICENSE
 ```
 
 ---

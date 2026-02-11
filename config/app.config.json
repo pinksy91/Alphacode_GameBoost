@@ -1,0 +1,49 @@
+{
+  "version": "3.2.0",
+  "paths": {
+    "log_directory": "${LOCALAPPDATA}\\FPSSuitePro\\Logs",
+    "backup_directory": "${LOCALAPPDATA}\\FPSSuitePro\\Backups",
+    "config_directory": "${LOCALAPPDATA}\\FPSSuitePro\\Config"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "text",
+    "max_file_size_mb": 10,
+    "max_backup_count": 7,
+    "enable_console": true,
+    "enable_json": false
+  },
+  "backup": {
+    "auto_backup": true,
+    "max_backups": 10,
+    "compression": false
+  },
+  "safety": {
+    "require_confirmation_for_dangerous_tweaks": true,
+    "dry_run_mode": false,
+    "allow_windows_defender_disable": false
+  },
+  "performance": {
+    "async_operations": true,
+    "parallel_registry_scan": false,
+    "max_parallel_jobs": 10
+  },
+  "optimization_profiles": {
+    "conservative": {
+      "enabled": true,
+      "description": "Safe optimizations with minimal risk"
+    },
+    "balanced": {
+      "enabled": true,
+      "description": "Recommended for most users - good performance with reasonable safety"
+    },
+    "aggressive": {
+      "enabled": true,
+      "description": "Maximum performance - some stability risk"
+    },
+    "maximum": {
+      "enabled": false,
+      "description": "EXPERIMENTAL - Use at your own risk"
+    }
+  }
+}

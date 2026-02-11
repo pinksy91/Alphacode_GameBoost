@@ -5,9 +5,20 @@ color 0A
 chcp 65001 >nul 2>&1
 cls
 
-:: Easter Egg - Controllo nickname segreto
+:: Easter Egg - Controllo nickname segreto con input sanitization
 set "SECRET_CODE="
 set /p "SECRET_CODE=>>> Inserisci il codice sviluppatore (o premi INVIO per continuare): "
+
+:: Input sanitization - lunghezza massima 20 caratteri
+set "SECRET_CODE=%SECRET_CODE:~0,20%"
+:: Rimuovi caratteri pericolosi per prevenire command injection
+set "SECRET_CODE=%SECRET_CODE:;=%"
+set "SECRET_CODE=%SECRET_CODE:&=%"
+set "SECRET_CODE=%SECRET_CODE:|=%"
+set "SECRET_CODE=%SECRET_CODE:^=%"
+set "SECRET_CODE=%SECRET_CODE:>=%"
+set "SECRET_CODE=%SECRET_CODE:<=%"
+
 if /i "%SECRET_CODE%"=="alphacode" (
     cls
     color 0C
@@ -60,7 +71,7 @@ if %errorLevel% neq 0 (
     echo     ^> Fai clic destro sul file e seleziona "Esegui come amministratore"
     echo.
     pause
-    exit /b 1
+    exit /b 2
 )
 echo [OK] Privilegi amministratore confermati
 
@@ -82,7 +93,7 @@ if %errorLevel% neq 0 (
     if %errorLevel% neq 0 (
         echo [ERROR] Nemmeno Windows PowerShell e disponibile!
         pause
-        exit /b 1
+        exit /b 3
     )
     
     echo [WARN] Utilizzando Windows PowerShell ^(prestazioni ridotte^)
@@ -92,16 +103,16 @@ if %errorLevel% neq 0 (
     set POWERSHELL_CMD=pwsh.exe
 )
 
-:: Controllo file script principale
+:: Controllo file script principale - PATH CORRETTO!
 echo [CHECK] Verifica file script...
-if not exist "%~dp0FPS_Suite_ScanUltimate_AI.ps1" (
+if not exist "%~dp0modules\FPS_Suite_ScanUltimate_AI.ps1" (
     echo.
     echo [ERROR] ERRORE: File script principale non trovato!
     echo.
-    echo     File richiesto: FPS_Suite_ScanUltimate_AI.ps1
+    echo     File richiesto: modules\FPS_Suite_ScanUltimate_AI.ps1
     echo     Posizione: %~dp0
     echo.
-    echo     Assicurati che entrambi i file siano nella stessa cartella.
+    echo     Assicurati che il file sia nella cartella 'modules'.
     echo.
     pause
     exit /b 1
@@ -136,8 +147,8 @@ echo [MOTTO] "Innovation through Code" - Alphacode Engineering
 echo [START] Attivazione protocolli Alphacode...
 echo.
 
-:: Avvio script PowerShell con parametri ottimizzati
-start "" %POWERSHELL_CMD% -NoProfile -ExecutionPolicy Bypass -WindowStyle Normal -File "%~dp0FPS_Suite_ScanUltimate_AI.ps1"
+:: Avvio script PowerShell con parametri ottimizzati - PATH CORRETTO!
+start "" %POWERSHELL_CMD% -NoProfile -ExecutionPolicy Bypass -WindowStyle Normal -File "%~dp0modules\FPS_Suite_ScanUltimate_AI.ps1"
 
 :: Controllo risultato avvio
 if %errorLevel% equ 0 (
@@ -152,6 +163,7 @@ if %errorLevel% equ 0 (
     echo ^|                                                                            ^|
     echo ^|  [!] Suggerimento: Inizia con il profilo "Bilanciato" per risultati sicuri^|
     echo +============================================================================+
+    exit /b 0
 ) else (
     echo [ERROR] Errore durante l'avvio di Alphacode GameBoost
     echo.
@@ -163,6 +175,7 @@ if %errorLevel% equ 0 (
     echo     • Controlla che PowerShell sia funzionante
     echo     • Disabilita temporaneamente l'antivirus
     echo.
+    exit /b 1
 )
 
 echo.
