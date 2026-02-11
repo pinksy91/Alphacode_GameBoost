@@ -581,7 +581,7 @@ Se **Alphacode GameBoost** ti ha aiutato a ottenere migliori prestazioni gaming:
 ### Link Progetto
 
 - **Repository**: [github.com/pinksy91/Alphacode_GameBoost](https://github.com/pinksy91/Alphacode_GameBoost)
-- **Profilo Alphacode**: [github.com/Alphacode](https://github.com/Alphacode)
+- **Profilo Alphacode**: [github.com/Alphacode](https://github.com/pinksy91)
 - **Segnala Problemi**: [Pagina Issues](https://github.com/pinksy91/Alphacode_GameBoost/issues)
 - **Pipeline CI/CD**: [Actions](https://github.com/pinksy91/Alphacode_GameBoost/actions)
 
